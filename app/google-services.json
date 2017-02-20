@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "213875015509",
+    "firebase_url": "https://canvaschat-e41e4.firebaseio.com",
+    "project_id": "canvaschat-e41e4",
+    "storage_bucket": "canvaschat-e41e4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:213875015509:android:b7c7b5bff9b81910",
+        "android_client_info": {
+          "package_name": "com.example.luffiadityasandy.canvaschat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "213875015509-m88j0k8v61c3h3brg6m0uj7h1h1jfhoi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.luffiadityasandy.canvaschat",
+            "certificate_hash": "9C6C789C9EC393208086646398B665E93948EE69"
+          }
+        },
+        {
+          "client_id": "213875015509-ioocrqo5v8fgs207f21taleab2cjb4og.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8toBb0vMOEB3ubS-yxTzdDont6Kfgqug"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "213875015509-ioocrqo5v8fgs207f21taleab2cjb4og.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

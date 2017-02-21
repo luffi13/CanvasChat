@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.example.luffiadityasandy.canvaschat.R;
 import com.example.luffiadityasandy.canvaschat.canvas_handler.DrawView;
+import com.example.luffiadityasandy.canvaschat.canvas_handler.ShareableCanvasView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -47,7 +48,7 @@ public class SignatureActivity extends AppCompatActivity {
 
     FirebaseAuth.AuthStateListener mAuthListener;
 
-    DrawView canvasController;
+    ShareableCanvasView canvasController;
     LinearLayout canvas;
     View mView;
     Button undo, redo, save;
@@ -91,7 +92,7 @@ public class SignatureActivity extends AppCompatActivity {
         verifyLocationPermissions(this);
 
         canvas = (LinearLayout)findViewById(R.id.myCanvas);
-        canvasController = new DrawView(this);
+        canvasController = new ShareableCanvasView(this);
         canvasController.setBackgroundColor(Color.WHITE);
         canvas.addView(canvasController, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mView = canvas;

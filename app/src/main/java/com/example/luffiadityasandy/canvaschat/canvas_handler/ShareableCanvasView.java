@@ -1,39 +1,35 @@
 package com.example.luffiadityasandy.canvaschat.canvas_handler;
 
 import android.content.Context;
-import android.content.ContextWrapper;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.provider.MediaStore;
 import android.util.Log;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
 
-import com.example.luffiadityasandy.canvaschat.R;
 import com.example.luffiadityasandy.canvaschat.object.ShareableItem;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-
 
 /**
- * Created by Luffi on 03/01/2017.
+ * Created by Luffi Aditya Sandy on 21/02/2017.
  */
 
-public class DrawView  extends View implements View.OnTouchListener {
+public class ShareableCanvasView extends View implements View.OnTouchListener  {
+
     private Canvas mCanvas;
     private Path mPath;
     private Paint mPaint;
+    private DatabaseReference databaseReference;
 
     ArrayList<String> listInFloat = new ArrayList<>();
 
@@ -42,10 +38,13 @@ public class DrawView  extends View implements View.OnTouchListener {
 
     Context context;
     String listCoordinate = "";
+    String mUid = "";
 
-    public DrawView(Context context)
+    public ShareableCanvasView(Context context)
     {
         super(context);
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        mUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         this.context = context;
         setFocusable(true);
         setFocusableInTouchMode(true);
@@ -61,9 +60,78 @@ public class DrawView  extends View implements View.OnTouchListener {
         mCanvas = new Canvas();
         mPath = new Path();
 
-        //instansiasi list coordinate
+        databaseReference.child("shareable_canvas").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                ShareableItem newItem = dataSnapshot.getValue(ShareableItem.class);
+                Log.d("addChild",dataSnapshot.toString());
+                Log.d("newItem",newItem.getUid());
+                if(!newItem.getUid().equals(mUid)){
+                    addPathFromDatabase(newItem);
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void addPathFromDatabase(ShareableItem newItem) {
+        //extract point to list point
+        String[] listPointString = newItem.getPoints().split("<<");
+        Float newX = null, newY = null;
+        Path newPath = new Path();
+
+        ArrayList<Pair<Float,Float>> listPointFloat= new ArrayList<>();
+        for(int i = 0 ; i < listPointString.length ; i ++){
+            Float x = Float.parseFloat(listPointString[i].split(",")[0]);
+            Float y = Float.parseFloat(listPointString[i].split(",")[1]);
+
+            if(i==0){
+                newPath.moveTo(x,y);
+                newX = x;
+                newY = y;
+            }
+            else if (i==(listPointString.length-1)){
+                newPath.lineTo(newX, newY);
+
+                // commit the path to our offscreen
+                mCanvas.drawPath(newPath, mPaint);
+                paths.add(newPath);
+            }
+            else {
+                float dx = Math.abs(x - newX);
+                float dy = Math.abs(y - newY);
+                if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
+                    newPath.quadTo(newX, newY, (x + newX)/2, (y + newY)/2);
+                    newX = x;
+                    newY = y;
+                }
+            }
+            //listPointFloat.add(new Pair<>(x,y));
+            invalidate();
+        }
 
     }
+
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -91,7 +159,6 @@ public class DrawView  extends View implements View.OnTouchListener {
         mX = x;
         mY = y;
         listCoordinate =x+","+y+"<<";
-        listInFloat.add(x+","+y);
 
 
     }
@@ -103,7 +170,6 @@ public class DrawView  extends View implements View.OnTouchListener {
             mX = x;
             mY = y;
             listCoordinate =listCoordinate+x+","+y+"<<";
-            listInFloat.add(x+","+y);
         }
     }
 
@@ -118,6 +184,8 @@ public class DrawView  extends View implements View.OnTouchListener {
 
         //push to database
 
+        ShareableItem item = new ShareableItem(listCoordinate,"free_hand", FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference.child("shareable_canvas").push().setValue(item);
 
     }
 
@@ -162,5 +230,4 @@ public class DrawView  extends View implements View.OnTouchListener {
         }
         return true;
     }
-
 }

@@ -10,4 +10,47 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.luffiadityasandy.canvaschat.activity.ShareableCanvasActivity">
 
+    <TextView
+        android:id="@+id/judul"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textStyle="bold"
+        android:text="Shareable Canvas" />
+
+    <LinearLayout
+        android:id="@+id/myCanvas"
+        android:layout_below="@+id/judul"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_marginTop="16dp"
+        android:layout_centerHorizontal="true"
+        android:orientation="horizontal"/>
+
+    <LinearLayout
+        android:id="@+id/panelButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/myCanvas"
+        android:orientation="horizontal">
+        <Button
+            android:text="undo"
+            android:id="@+id/undo"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+        <Button
+            android:text="redo"
+            android:id="@+id/redo"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+        <Button
+            android:text="save"
+            android:id="@+id/saveCanvas"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 </RelativeLayout>

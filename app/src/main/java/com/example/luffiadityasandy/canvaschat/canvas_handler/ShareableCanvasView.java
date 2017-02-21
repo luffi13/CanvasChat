@@ -39,13 +39,15 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
     Context context;
     String listCoordinate = "";
     String mUid = "";
+    String channel_id;
 
-    public ShareableCanvasView(Context context)
+    public ShareableCanvasView(Context context, String channel_id)
     {
         super(context);
         databaseReference = FirebaseDatabase.getInstance().getReference();
         mUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         this.context = context;
+        this.channel_id = channel_id;
         setFocusable(true);
         setFocusableInTouchMode(true);
         this.setOnTouchListener(this);
@@ -60,7 +62,7 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         mCanvas = new Canvas();
         mPath = new Path();
 
-        databaseReference.child("shareable_canvas").addChildEventListener(new ChildEventListener() {
+        databaseReference.child("shareable_canvas").child(channel_id).child("messages").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 ShareableItem newItem = dataSnapshot.getValue(ShareableItem.class);
@@ -185,7 +187,7 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         //push to database
 
         ShareableItem item = new ShareableItem(listCoordinate,"free_hand", FirebaseAuth.getInstance().getCurrentUser().getUid());
-        databaseReference.child("shareable_canvas").push().setValue(item);
+        databaseReference.child("shareable_canvas").child(channel_id).child("messages").push().setValue(item);
 
     }
 

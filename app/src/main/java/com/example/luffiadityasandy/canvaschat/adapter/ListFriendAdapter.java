@@ -10,6 +10,7 @@ import com.bumptech.glide.Glide;
 import com.example.luffiadityasandy.canvaschat.R;
 import com.example.luffiadityasandy.canvaschat.ViewHolder.FriendViewHolder;
 import com.example.luffiadityasandy.canvaschat.activity.OfflineCanvasChatActvity;
+import com.example.luffiadityasandy.canvaschat.activity.ShareableCanvasActivity;
 import com.example.luffiadityasandy.canvaschat.activity.WriteDatabaseActivity;
 import com.example.luffiadityasandy.canvaschat.object.User;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -48,6 +49,12 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
                 goPrivateChat(model);
             }
         });
+        viewHolder.email.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goShareableChat(model);
+            }
+        });
 
 
 
@@ -56,6 +63,12 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
 
     private void goPrivateChat(User user){
         Intent privateChatIntent = new Intent(activity, OfflineCanvasChatActvity.class);
+        privateChatIntent.putExtra("receiver",user);
+        activity.startActivity(privateChatIntent);
+    }
+
+    private void goShareableChat(User user){
+        Intent privateChatIntent = new Intent(activity, ShareableCanvasActivity.class);
         privateChatIntent.putExtra("receiver",user);
         activity.startActivity(privateChatIntent);
     }

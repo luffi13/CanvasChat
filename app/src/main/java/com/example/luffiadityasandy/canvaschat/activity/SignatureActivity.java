@@ -48,7 +48,7 @@ public class SignatureActivity extends AppCompatActivity {
 
     FirebaseAuth.AuthStateListener mAuthListener;
 
-    ShareableCanvasView canvasController;
+    DrawView canvasController;
     LinearLayout canvas;
     View mView;
     Button undo, redo, save;
@@ -92,7 +92,7 @@ public class SignatureActivity extends AppCompatActivity {
         verifyLocationPermissions(this);
 
         canvas = (LinearLayout)findViewById(R.id.myCanvas);
-        canvasController = new ShareableCanvasView(this);
+        canvasController = new DrawView(this);
         canvasController.setBackgroundColor(Color.WHITE);
         canvas.addView(canvasController, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mView = canvas;

@@ -36,28 +36,37 @@ public class ShareableCanvasActivity extends AppCompatActivity {
     LinearLayout canvas;
     View mView;
     ShareableCanvasView canvasController;
-    Button undo, redo, save ,freehand_btn, circle_btn, rectangle_btn;
+    Button undo, redo, save ,freehand_btn, circle_btn, rectangle_btn, line_btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shareable_canvas);
+
+        //Firebase get user and database
         databaseReference = FirebaseDatabase.getInstance().getReference();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         receiver = (User)getIntent().getSerializableExtra("receiver");
+
+        //get button from UI
         undo = (Button)findViewById(R.id.undo);
         redo = (Button)findViewById(R.id.redo);
         save = (Button)findViewById(R.id.saveCanvas) ;
         rectangle_btn = (Button)findViewById(R.id.rectangle_btn);
         circle_btn= (Button)findViewById(R.id.circle_btn);
         freehand_btn = (Button)findViewById(R.id.freehand_btn);
+        line_btn = (Button)findViewById(R.id.line_btn);
         canvas = (LinearLayout)findViewById(R.id.myCanvas);
 
+
+
+        //set listener for button click
         undo.setOnClickListener(clickHandler);
         redo.setOnClickListener(clickHandler);
         save.setOnClickListener(clickHandler);
         rectangle_btn.setOnClickListener(clickHandler);
         circle_btn.setOnClickListener(clickHandler);
+        line_btn.setOnClickListener(clickHandler);
         freehand_btn.setOnClickListener(clickHandler);
 
         getChannel();
@@ -86,6 +95,9 @@ public class ShareableCanvasActivity extends AppCompatActivity {
                 case R.id.freehand_btn:
                     canvasController.setPaintTool("freehand");
                     break;
+                case R.id.line_btn:
+                    canvasController.setPaintTool("line");
+                    break;
             }
         }
     };
@@ -106,6 +118,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         });
     }
 
+    //get channel to push message in firebase database
     private void getChannel(){
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Connecting");
@@ -150,6 +163,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         });
     }
 
+    //prepare canvas by set background color and set size of canvas
     public void prepareCanvasView(){
         canvasController = new ShareableCanvasView(this,channel_id);
         canvasController.setBackgroundColor(Color.WHITE);

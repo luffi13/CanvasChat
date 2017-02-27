@@ -58,7 +58,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/panelButton">
         <Button
-            android:text="rectangle"
+            android:text="rect"
             android:id="@+id/rectangle_btn"
             android:layout_width="0dp"
             android:layout_weight="1"
@@ -70,11 +70,19 @@
             android:layout_weight="1"
             android:layout_height="wrap_content" />
         <Button
-            android:text="freehand"
+            android:text="line"
+            android:id="@+id/line_btn"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+        <Button
+            android:text="free"
             android:id="@+id/freehand_btn"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content" />
+
+
 
     </LinearLayout>
 </RelativeLayout>

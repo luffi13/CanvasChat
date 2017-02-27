@@ -8,6 +8,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
+import android.graphics.Region;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -24,6 +26,7 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 
 /**
@@ -34,11 +37,15 @@ public class DrawView  extends View implements View.OnTouchListener {
     private Canvas mCanvas;
     private Path mPath;
     private Paint mPaint;
-
-    ArrayList<String> listInFloat = new ArrayList<>();
+    private float mX, mY;
+    private float startX, startY, endX, endY;
+    private static final float TOUCH_TOLERANCE = 4;
 
     private ArrayList<Path> paths = new ArrayList<>();
     private ArrayList<Path> undonePaths = new ArrayList<>();
+    HashMap<String,Void> listFunction;
+
+    String paintTool;
 
     Context context;
     String listCoordinate = "";
@@ -60,10 +67,11 @@ public class DrawView  extends View implements View.OnTouchListener {
         mPaint.setStrokeWidth(6);
         mCanvas = new Canvas();
         mPath = new Path();
-
-        //instansiasi list coordinate
-
+        paintTool = "freehand";
+        listFunction = new HashMap<>();
     }
+
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -80,9 +88,13 @@ public class DrawView  extends View implements View.OnTouchListener {
         canvas.drawPath(mPath, mPaint);
     }
 
+    public void setPaintColor(int color){
+        mPaint.setColor(color);
+    }
 
-    private float mX, mY;
-    private static final float TOUCH_TOLERANCE = 4;
+    public void setPaintTool(String tool){
+        this.paintTool = tool;
+    }
 
     private void touch_start(float x, float y) {
         undonePaths.clear();
@@ -91,11 +103,10 @@ public class DrawView  extends View implements View.OnTouchListener {
         mX = x;
         mY = y;
         listCoordinate =x+","+y+"<<";
-        listInFloat.add(x+","+y);
-
-
     }
+
     private void touch_move(float x, float y) {
+        Log.d("coordinate",x +" "+y);
         float dx = Math.abs(x - mX);
         float dy = Math.abs(y - mY);
         if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
@@ -103,22 +114,70 @@ public class DrawView  extends View implements View.OnTouchListener {
             mX = x;
             mY = y;
             listCoordinate =listCoordinate+x+","+y+"<<";
-            listInFloat.add(x+","+y);
         }
     }
 
     private void touch_up() {
         mPath.lineTo(mX, mY);
-        Log.d("listcoordinate",listInFloat.toString());
         // commit the path to our offscreen
         mCanvas.drawPath(mPath, mPaint);
         // kill this so we don't double draw
         paths.add(mPath);
         mPath = new Path();
+    }
 
-        //push to database
+    private void drawRectangle(){
 
+        float top, bottom, left, right;
 
+        if(startX<endX){
+            left = startX;
+            right = endX;
+        }
+        else {
+            left = endX;
+            right = startX;
+        }
+
+        if(startY<endY){
+            top = startY;
+            bottom = endY;
+        }
+        else {
+            top = endY;
+            bottom = startY;
+        }
+
+        mPath.addRect(new RectF(left,top,right,bottom), Path.Direction.CCW);
+        mCanvas.drawPath(mPath,mPaint);
+        paths.add(mPath);
+        mPath = new Path();
+    }
+
+    private void drawCircle(){
+        float top, bottom, left, right;
+
+        if(startX<endX){
+            left = startX;
+            right = endX;
+        }
+        else {
+            left = endX;
+            right = startX;
+        }
+
+        if(startY<endY){
+            top = startY;
+            bottom = endY;
+        }
+        else {
+            top = endY;
+            bottom = startY;
+        }
+        mPath.addOval(left,top,right,bottom, Path.Direction.CCW);
+        mCanvas.drawPath(mPath,mPaint);
+        paths.add(mPath);
+        mPath = new Path();
     }
 
     public void onClickUndo () {
@@ -146,20 +205,59 @@ public class DrawView  extends View implements View.OnTouchListener {
         float x = event.getX();
         float y = event.getY();
 
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                touch_start(x, y);
-                invalidate();
-                break;
-            case MotionEvent.ACTION_MOVE:
-                touch_move(x, y);
-                invalidate();
-                break;
-            case MotionEvent.ACTION_UP:
-                touch_up();
-                invalidate();
-                break;
+        if(paintTool == "freehand"){
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    touch_start(x, y);
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    touch_move(x, y);
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    touch_up();
+                    invalidate();
+                    break;
+            }
         }
+
+        else if(paintTool == "rectangle"){
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    undonePaths.clear();
+                    mPath.reset();
+                    startX = x;
+                    startY = y;
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    endX = x;
+                    endY = y;
+                    drawRectangle();
+                    invalidate();
+                    break;
+            }
+        }
+
+        else if(paintTool == "circle"){
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    undonePaths.clear();
+                    mPath.reset();
+                    startX = x;
+                    startY = y;
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    endX = x;
+                    endY = y;
+                    drawCircle();
+                    invalidate();
+                    break;
+            }
+        }
+
         return true;
     }
 

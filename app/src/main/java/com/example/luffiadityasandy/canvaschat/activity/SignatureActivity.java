@@ -51,7 +51,7 @@ public class SignatureActivity extends AppCompatActivity {
     DrawView canvasController;
     LinearLayout canvas;
     View mView;
-    Button undo, redo, save;
+    Button undo, redo, save , freehand_btn, circle_btn, rectangle_btn;
     StorageReference storageReference;
 
     @Override
@@ -88,6 +88,9 @@ public class SignatureActivity extends AppCompatActivity {
         undo = (Button)findViewById(R.id.undo);
         redo = (Button)findViewById(R.id.redo);
         save = (Button)findViewById(R.id.saveCanvas) ;
+        rectangle_btn = (Button)findViewById(R.id.rectangle_btn);
+        circle_btn= (Button)findViewById(R.id.circle_btn);
+        freehand_btn = (Button)findViewById(R.id.freehand_btn);
 
         verifyLocationPermissions(this);
 
@@ -99,6 +102,9 @@ public class SignatureActivity extends AppCompatActivity {
         undo.setOnClickListener(clickHandler);
         redo.setOnClickListener(clickHandler);
         save.setOnClickListener(clickHandler);
+        rectangle_btn.setOnClickListener(clickHandler);
+        circle_btn.setOnClickListener(clickHandler);
+        freehand_btn.setOnClickListener(clickHandler);
 
         //storage to upload bitmap
         storage = FirebaseStorage.getInstance();
@@ -131,6 +137,16 @@ public class SignatureActivity extends AppCompatActivity {
                     //Toast.makeText(SignatureActivity.this, "saved", Toast.LENGTH_SHORT).show();
                     uploadDataByte(mView);
                     break;
+                case R.id.rectangle_btn:
+                    canvasController.setPaintTool("rectangle");
+                    break;
+                case R.id.circle_btn:
+                    canvasController.setPaintTool("circle");
+                    break;
+                case R.id.freehand_btn:
+                    canvasController.setPaintTool("freehand");
+                    break;
+
             }
         }
     };

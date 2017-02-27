@@ -5,12 +5,17 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import com.example.luffiadityasandy.canvaschat.object.ShareableItem;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -19,6 +24,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by Luffi Aditya Sandy on 21/02/2017.
@@ -30,8 +37,9 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
     private Path mPath;
     private Paint mPaint;
     private DatabaseReference databaseReference;
+    private float startX, startY, endX, endY;
+    String paintTool;
 
-    ArrayList<String> listInFloat = new ArrayList<>();
 
     private ArrayList<Path> paths = new ArrayList<>();
     private ArrayList<Path> undonePaths = new ArrayList<>();
@@ -61,6 +69,7 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         mPaint.setStrokeWidth(6);
         mCanvas = new Canvas();
         mPath = new Path();
+        paintTool = "freehand";
 
         databaseReference.child("shareable_canvas").child(channel_id).child("messages").addChildEventListener(new ChildEventListener() {
             @Override
@@ -95,13 +104,45 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         });
     }
 
+    public void setPaintTool(String paintTool){
+        this.paintTool = paintTool;
+    }
+
     private void addPathFromDatabase(ShareableItem newItem) {
         //extract point to list point
-        String[] listPointString = newItem.getPoints().split("<<");
-        Float newX = null, newY = null;
-        Path newPath = new Path();
 
-        ArrayList<Pair<Float,Float>> listPointFloat= new ArrayList<>();
+        if(newItem.getType().equals("freehand")){
+            drawFreeHand(newItem);
+        }
+        else if(newItem.getType().equals("rectangle")){
+            HashMap<String, Float> listPoint = stringToPoint(newItem.getPoints());
+            drawRectangle(listPoint.get("left"),listPoint.get("top"),listPoint.get("right"),listPoint.get("bottom"));
+        }
+        else if(newItem.getType().equals("circle")){
+            HashMap<String, Float> listPoint = stringToPoint(newItem.getPoints());
+            drawCircle(listPoint.get("left"),listPoint.get("top"),listPoint.get("right"),listPoint.get("bottom"));
+        }
+        else if(newItem.getType().equals("line")){
+
+        }
+
+    }
+
+    private HashMap<String,Float> stringToPoint(String data){
+        String[]listData = data.split("<<");
+        HashMap<String, Float> floatPoints = new HashMap<>();
+        floatPoints.put("left",Float.parseFloat(listData[0]));
+        floatPoints.put("top",Float.parseFloat(listData[1]));
+        floatPoints.put("right",Float.parseFloat(listData[2]));
+        floatPoints.put("bottom",Float.parseFloat(listData[3]));
+
+        return floatPoints;
+    }
+
+    private void drawFreeHand(ShareableItem newItem){
+        String[] listPointString = newItem.getPoints().split("<<");
+        Path newPath = new Path();
+        Float newX = null, newY = null;
         for(int i = 0 ; i < listPointString.length ; i ++){
             Float x = Float.parseFloat(listPointString[i].split(",")[0]);
             Float y = Float.parseFloat(listPointString[i].split(",")[1]);
@@ -130,7 +171,22 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
             //listPointFloat.add(new Pair<>(x,y));
             invalidate();
         }
+    }
 
+    private void drawCircle(float left, float top,  float right, float bottom){
+        Path newPath = new Path();
+        newPath.addOval(left,top,right,bottom, Path.Direction.CCW);
+        mCanvas.drawPath(newPath,mPaint);
+        paths.add(newPath);
+        invalidate();
+    }
+
+    private void drawRectangle(float left, float top,  float right, float bottom ){
+        Path newPath = new Path();
+        newPath.addRect(left,top,right,bottom, Path.Direction.CCW);
+        mCanvas.drawPath(newPath,mPaint);
+        paths.add(newPath);
+        invalidate();
     }
 
 
@@ -177,7 +233,6 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
 
     private void touch_up() {
         mPath.lineTo(mX, mY);
-        Log.d("listcoordinate",listInFloat.toString());
         // commit the path to our offscreen
         mCanvas.drawPath(mPath, mPaint);
         // kill this so we don't double draw
@@ -185,8 +240,7 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         mPath = new Path();
 
         //push to database
-
-        ShareableItem item = new ShareableItem(listCoordinate,"free_hand", FirebaseAuth.getInstance().getCurrentUser().getUid());
+        ShareableItem item = new ShareableItem(listCoordinate,paintTool, mUid);
         databaseReference.child("shareable_canvas").child(channel_id).child("messages").push().setValue(item);
 
     }
@@ -216,20 +270,100 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         float x = event.getX();
         float y = event.getY();
 
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                touch_start(x, y);
-                invalidate();
-                break;
-            case MotionEvent.ACTION_MOVE:
-                touch_move(x, y);
-                invalidate();
-                break;
-            case MotionEvent.ACTION_UP:
-                touch_up();
-                invalidate();
-                break;
+        if(paintTool.equals("freehand")){
+
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    touch_start(x, y);
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    touch_move(x, y);
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    touch_up();
+                    invalidate();
+                    break;
+            }
+        }
+        else if(paintTool.equals("rectangle")){
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    undonePaths.clear();
+                    mPath.reset();
+                    startX = x;
+                    startY = y;
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    endX = x;
+                    endY = y;
+                    HashMap<String,Float> edgePoints = getEdgePoint();
+                    drawRectangle(edgePoints.get("left"),edgePoints.get("top"),edgePoints.get("right"),edgePoints.get("bottom"));
+                    sendDataByType(edgePoints,paintTool);
+                    invalidate();
+                    break;
+            }
+        }
+
+        else if(paintTool.equals("circle")){
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    undonePaths.clear();
+                    mPath.reset();
+                    startX = x;
+                    startY = y;
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    endX = x;
+                    endY = y;
+                    HashMap<String,Float> edgePoints = getEdgePoint();
+                    drawCircle(edgePoints.get("left"),edgePoints.get("top"),edgePoints.get("right"),edgePoints.get("bottom"));
+                    sendDataByType(edgePoints,paintTool);
+                    invalidate();
+                    break;
+            }
         }
         return true;
+    }
+
+    private void sendDataByType(final HashMap<String,Float> edgePoints, final String type){
+        String edges = edgePoints.get("left")+"<<"+edgePoints.get("top")+"<<"+edgePoints.get("right")+"<<"+edgePoints.get("bottom");
+        ShareableItem item = new ShareableItem(edges,type, mUid);
+        databaseReference.child("shareable_canvas").child(channel_id).child("messages").push().setValue(item).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(context, "failed to send data by type", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private HashMap<String,Float> getEdgePoint() {
+        HashMap<String, Float> matchingFloat = new HashMap<>();
+
+        if(startX<endX){
+            matchingFloat.put("left",startX);
+            matchingFloat.put("right",endX);
+        }
+        else {
+            matchingFloat.put("left",endX);
+            matchingFloat.put("right",startX);
+        }
+
+        if(startY<endY){
+            matchingFloat.put("top",startY);
+            matchingFloat.put("bottom",endY);
+        }
+        else {
+            matchingFloat.put("top",endY);
+            matchingFloat.put("bottom",startY);
+        }
+        return matchingFloat;
     }
 }

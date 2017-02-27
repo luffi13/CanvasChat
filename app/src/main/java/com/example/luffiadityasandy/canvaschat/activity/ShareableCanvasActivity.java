@@ -36,7 +36,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
     LinearLayout canvas;
     View mView;
     ShareableCanvasView canvasController;
-    Button undo, redo, save;
+    Button undo, redo, save ,freehand_btn, circle_btn, rectangle_btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +48,17 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         undo = (Button)findViewById(R.id.undo);
         redo = (Button)findViewById(R.id.redo);
         save = (Button)findViewById(R.id.saveCanvas) ;
+        rectangle_btn = (Button)findViewById(R.id.rectangle_btn);
+        circle_btn= (Button)findViewById(R.id.circle_btn);
+        freehand_btn = (Button)findViewById(R.id.freehand_btn);
         canvas = (LinearLayout)findViewById(R.id.myCanvas);
 
         undo.setOnClickListener(clickHandler);
         redo.setOnClickListener(clickHandler);
         save.setOnClickListener(clickHandler);
+        rectangle_btn.setOnClickListener(clickHandler);
+        circle_btn.setOnClickListener(clickHandler);
+        freehand_btn.setOnClickListener(clickHandler);
 
         getChannel();
     }
@@ -70,6 +76,15 @@ public class ShareableCanvasActivity extends AppCompatActivity {
                 case R.id.saveCanvas:
                     //Toast.makeText(SignatureActivity.this, "saved", Toast.LENGTH_SHORT).show();
                     //uploadDataByte(mView);
+                    break;
+                case R.id.rectangle_btn:
+                    canvasController.setPaintTool("rectangle");
+                    break;
+                case R.id.circle_btn:
+                    canvasController.setPaintTool("circle");
+                    break;
+                case R.id.freehand_btn:
+                    canvasController.setPaintTool("freehand");
                     break;
             }
         }

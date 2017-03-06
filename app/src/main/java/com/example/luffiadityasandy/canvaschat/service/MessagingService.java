@@ -43,7 +43,7 @@ public class MessagingService extends com.google.firebase.messaging.FirebaseMess
                         .setContentText(remoteMessage.getNotification().getBody());
 
 
-        if(typeMessage.equals("shareable")){
+        if(typeMessage.equals("shareable_canvas")){
             Intent resultIntent = new Intent(this, ShareableCanvasActivity.class);
             resultIntent.putExtra("receiver",sender);
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
@@ -52,7 +52,7 @@ public class MessagingService extends com.google.firebase.messaging.FirebaseMess
             PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
             mBuilder.setContentIntent(resultPendingIntent);
         }
-        else {
+        else if(typeMessage.equals("offline_canvas")) {
             Intent resultIntent = new Intent(this, OfflineCanvasChatActvity.class);
             resultIntent.putExtra("receiver",sender);
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());

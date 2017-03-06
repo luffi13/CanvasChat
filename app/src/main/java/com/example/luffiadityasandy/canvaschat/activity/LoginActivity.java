@@ -139,11 +139,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 firebaseUser =mFirebaseAuth.getCurrentUser();
-                if(!dataSnapshot.hasChild(firebaseUser.getUid())){
-                    databaseReference.child("user_detail").child(firebaseUser.getUid()).setValue(new User(
-                            firebaseUser.getUid(),firebaseUser.getEmail(),firebaseUser.getDisplayName(), FirebaseInstanceId.getInstance().getToken(),firebaseUser.getPhotoUrl().toString()
-                    ));
-                }
+                databaseReference.child("user_detail").child(firebaseUser.getUid()).setValue(new User(
+                        firebaseUser.getUid(),firebaseUser.getEmail(),firebaseUser.getDisplayName(), FirebaseInstanceId.getInstance().getToken(),firebaseUser.getPhotoUrl().toString()
+                ));
             }
 
             @Override

@@ -1,7 +1,6 @@
 package com.example.luffiadityasandy.canvaschat.activity;
 
 import android.content.Intent;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,7 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.widget.Toast;
 
 import com.example.luffiadityasandy.canvaschat.R;
-import com.example.luffiadityasandy.canvaschat.ViewHolder.FriendViewHolder;
+import com.example.luffiadityasandy.canvaschat.view_holder.FriendViewHolder;
 import com.example.luffiadityasandy.canvaschat.adapter.ListFriendAdapter;
 import com.example.luffiadityasandy.canvaschat.object.User;
 import com.google.android.gms.common.ConnectionResult;

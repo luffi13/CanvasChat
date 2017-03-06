@@ -1,17 +1,15 @@
 package com.example.luffiadityasandy.canvaschat.adapter;
 
 import android.app.Activity;
-import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.View;
 
 import com.bumptech.glide.Glide;
-import com.example.luffiadityasandy.canvaschat.ViewHolder.MessageHolder;
+import com.example.luffiadityasandy.canvaschat.view_holder.MessageHolder;
 import com.example.luffiadityasandy.canvaschat.object.Message;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.Query;
 
 /**
  * Created by Luffi Aditya Sandy on 17/02/2017.

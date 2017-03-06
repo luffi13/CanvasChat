@@ -3,21 +3,17 @@ package com.example.luffiadityasandy.canvaschat.adapter;
 import android.app.Activity;
 import android.content.Intent;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import com.bumptech.glide.Glide;
 import com.example.luffiadityasandy.canvaschat.R;
-import com.example.luffiadityasandy.canvaschat.ViewHolder.FriendViewHolder;
+import com.example.luffiadityasandy.canvaschat.view_holder.FriendViewHolder;
 import com.example.luffiadityasandy.canvaschat.activity.OfflineCanvasChatActvity;
 import com.example.luffiadityasandy.canvaschat.activity.ShareableCanvasActivity;
-import com.example.luffiadityasandy.canvaschat.activity.WriteDatabaseActivity;
 import com.example.luffiadityasandy.canvaschat.object.User;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
-
-import java.io.Serializable;
 
 /**
  * Created by Luffi Aditya Sandy on 16/02/2017.

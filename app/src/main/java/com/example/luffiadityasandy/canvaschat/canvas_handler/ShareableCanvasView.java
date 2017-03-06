@@ -41,10 +41,12 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
     String paintTool;
     private float mX, mY;
     private static final float TOUCH_TOLERANCE = 4;
+    private int color;
+    private int strokeWidth;
 
 
-    private ArrayList<Path> paths = new ArrayList<>();
-    private ArrayList<Path> undonePaths = new ArrayList<>();
+    private ArrayList<Pair<Path,Paint>> paths = new ArrayList<>();
+    private ArrayList<Pair<Path,Paint>> undonePaths = new ArrayList<>();
 
     Context context;
     String listCoordinate = "";
@@ -58,17 +60,15 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         mUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         this.context = context;
         this.channel_id = channel_id;
+        this.color = Color.BLACK;
+        this.strokeWidth = 6;
+
+        setPaintProperties();
+
         setFocusable(true);
         setFocusableInTouchMode(true);
         this.setOnTouchListener(this);
-        mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setDither(true);
-        mPaint.setColor(Color.BLACK);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeJoin(Paint.Join.ROUND);
-        mPaint.setStrokeCap(Paint.Cap.ROUND);
-        mPaint.setStrokeWidth(6);
+
         mCanvas = new Canvas();
         mPath = new Path();
         paintTool = "freehand";
@@ -106,6 +106,22 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         });
     }
 
+    public void setPaintColor(int color){
+        this.color = color;
+        this.mPaint.setColor(color);
+    }
+
+    private void setPaintProperties(){
+        mPaint = new Paint();
+        mPaint.setAntiAlias(true);
+        mPaint.setDither(true);
+        mPaint.setColor(color);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeJoin(Paint.Join.ROUND);
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
+        mPaint.setStrokeWidth(strokeWidth);
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -116,8 +132,8 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         //mPath = new Path();
         //canvas.drawPath(mPath, mPaint);
         //Log.d("ondraw",paths.size()+"");
-        for (Path p : paths){
-            canvas.drawPath(p, mPaint);
+        for (Pair<Path,Paint> p : paths){
+            canvas.drawPath(p.first, p.second);
         }
         canvas.drawPath(mPath, mPaint);
     }
@@ -134,11 +150,11 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         }
         else if(newItem.getType().equals("rectangle")){
             HashMap<String, Float> listPoint = stringToPoint(newItem.getPoints());
-            drawRectangle(listPoint.get("left"),listPoint.get("top"),listPoint.get("right"),listPoint.get("bottom"));
+            drawRectangle(listPoint.get("left"),listPoint.get("top"),listPoint.get("right"),listPoint.get("bottom"), newItem.getShareablePaint().getPaint());
         }
         else if(newItem.getType().equals("circle")){
             HashMap<String, Float> listPoint = stringToPoint(newItem.getPoints());
-            drawCircle(listPoint.get("left"),listPoint.get("top"),listPoint.get("right"),listPoint.get("bottom"));
+            drawCircle(listPoint.get("left"),listPoint.get("top"),listPoint.get("right"),listPoint.get("bottom"), newItem.getShareablePaint().getPaint());
         }
         else if(newItem.getType().equals("line")){
             String[]listData = newItem.getPoints().split("<<");
@@ -146,7 +162,8 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
             drawLine(Float.parseFloat(listData[0]),
                     Float.parseFloat(listData[1]),
                     Float.parseFloat(listData[2]),
-                    Float.parseFloat(listData[3]));
+                    Float.parseFloat(listData[3]),
+                    newItem.getShareablePaint().getPaint());
         }
 
     }
@@ -179,8 +196,8 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
                 newPath.lineTo(newX, newY);
 
                 // commit the path to our offscreen
-                mCanvas.drawPath(newPath, mPaint);
-                paths.add(newPath);
+                mCanvas.drawPath(newPath, newItem.getShareablePaint().getPaint());
+                paths.add(Pair.create(newPath,newItem.getShareablePaint().getPaint()));
             }
             else {
                 float dx = Math.abs(x - newX);
@@ -196,29 +213,32 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         }
     }
 
-    private void drawCircle(float left, float top,  float right, float bottom){
+    private void drawCircle(float left, float top,  float right, float bottom, Paint paint){
         Path newPath = new Path();
         newPath.addOval(left,top,right,bottom, Path.Direction.CCW);
-        mCanvas.drawPath(newPath,mPaint);
-        paths.add(newPath);
+        mCanvas.drawPath(newPath,paint);
+        paths.add(Pair.create(newPath,paint));
         invalidate();
+        setPaintProperties();
     }
 
-    private void drawRectangle(float left, float top,  float right, float bottom ){
+    private void drawRectangle(float left, float top,  float right, float bottom, Paint paint ){
         Path newPath = new Path();
         newPath.addRect(left,top,right,bottom, Path.Direction.CCW);
-        mCanvas.drawPath(newPath,mPaint);
-        paths.add(newPath);
+        mCanvas.drawPath(newPath,paint);
+        paths.add(Pair.create(newPath,paint));
         invalidate();
+        setPaintProperties();
     }
 
-    private void drawLine(float startX, float startY, float endX, float endY){
+    private void drawLine(float startX, float startY, float endX, float endY, Paint paint){
         Path newPath = new Path();
         newPath.moveTo(startX,startY);
         newPath.lineTo(endX,endY);
-        mCanvas.drawPath(newPath,mPaint);
-        paths.add(newPath);
+        mCanvas.drawPath(newPath,paint);
+        paths.add(Pair.create(newPath,paint));
         invalidate();
+        setPaintProperties();
     }
 
 
@@ -249,11 +269,12 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         mCanvas.drawPath(mPath, mPaint);
 
         // kill this so we don't double draw
-        paths.add(mPath);
+        paths.add(Pair.create(mPath,mPaint));
         mPath = new Path();
+        setPaintProperties();
 
         //push to database
-        ShareableItem item = new ShareableItem(listCoordinate,paintTool, mUid);
+        ShareableItem item = new ShareableItem(listCoordinate,paintTool, mUid,color,strokeWidth);
         databaseReference.child("shareable_canvas").child(channel_id).child("messages").push().setValue(item);
 
     }
@@ -313,7 +334,7 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
                     endX = x;
                     endY = y;
                     HashMap<String,Float> edgePoints = getEdgePoint();
-                    drawRectangle(edgePoints.get("left"),edgePoints.get("top"),edgePoints.get("right"),edgePoints.get("bottom"));
+                    drawRectangle(edgePoints.get("left"),edgePoints.get("top"),edgePoints.get("right"),edgePoints.get("bottom"),mPaint);
                     sendPolyData(edgePoints,paintTool);
                     invalidate();
                     break;
@@ -333,7 +354,7 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
                     endX = x;
                     endY = y;
                     HashMap<String,Float> edgePoints = getEdgePoint();
-                    drawCircle(edgePoints.get("left"),edgePoints.get("top"),edgePoints.get("right"),edgePoints.get("bottom"));
+                    drawCircle(edgePoints.get("left"),edgePoints.get("top"),edgePoints.get("right"),edgePoints.get("bottom"),mPaint);
                     sendPolyData(edgePoints,paintTool);
                     invalidate();
                     break;
@@ -351,7 +372,7 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
                 case MotionEvent.ACTION_UP:
                     endX = x;
                     endY = y;
-                    drawLine(startX,startY,endX,endY);
+                    drawLine(startX,startY,endX,endY,mPaint);
                     sendLineData(startX,startY,endX,endY);
                     break;
             }
@@ -361,7 +382,7 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
 
     private void sendPolyData(HashMap<String,Float> edgePoints, String type){
         String edges = edgePoints.get("left")+"<<"+edgePoints.get("top")+"<<"+edgePoints.get("right")+"<<"+edgePoints.get("bottom");
-        ShareableItem item = new ShareableItem(edges,type, mUid);
+        ShareableItem item = new ShareableItem(edges,type, mUid,color,strokeWidth);
         databaseReference.child("shareable_canvas").child(channel_id).child("messages").push().setValue(item).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -376,7 +397,7 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
 
     private void sendLineData(float startX, float startY, float endX, float endY){
         String points = startX+"<<"+startY+"<<"+endX+"<<"+endY;
-        ShareableItem item = new ShareableItem(points,"line",mUid);
+        ShareableItem item = new ShareableItem(points,"line",mUid,color,strokeWidth);
         databaseReference.child("shareable_canvas").child(channel_id).child("messages").push().setValue(item)
         .addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override

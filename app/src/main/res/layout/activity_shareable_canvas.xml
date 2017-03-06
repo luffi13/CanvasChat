@@ -54,6 +54,7 @@
 
     </LinearLayout>
     <LinearLayout
+        android:id="@+id/shapePanel_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/panelButton">
@@ -81,8 +82,32 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content" />
-
-
+    </LinearLayout>
+    <Button
+        android:id="@+id/invite_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/shapePanel_ll"
+        android:text="invite"/>
+    <LinearLayout
+        android:id="@+id/colorPanel_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/panelButton">
+        <Button
+            android:text="red"
+            android:id="@+id/red_btn"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+        <Button
+            android:text="blue"
+            android:id="@+id/blue_btn"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
+
+
 </RelativeLayout>

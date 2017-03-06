@@ -15,7 +15,9 @@ import android.widget.Toast;
 import com.example.luffiadityasandy.canvaschat.R;
 import com.example.luffiadityasandy.canvaschat.canvas_handler.DrawView;
 import com.example.luffiadityasandy.canvaschat.canvas_handler.ShareableCanvasView;
+import com.example.luffiadityasandy.canvaschat.object.GCMRequest;
 import com.example.luffiadityasandy.canvaschat.object.User;
+import com.example.luffiadityasandy.canvaschat.service.ServiceMessaging;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -23,8 +25,20 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ShareableCanvasActivity extends AppCompatActivity {
 
@@ -36,7 +50,9 @@ public class ShareableCanvasActivity extends AppCompatActivity {
     LinearLayout canvas;
     View mView;
     ShareableCanvasView canvasController;
-    Button undo, redo, save ,freehand_btn, circle_btn, rectangle_btn, line_btn;
+    Button undo, redo, save ,
+            freehand_btn, circle_btn, rectangle_btn, line_btn, invite_btn,
+            red_btn, blue_btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +72,12 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         circle_btn= (Button)findViewById(R.id.circle_btn);
         freehand_btn = (Button)findViewById(R.id.freehand_btn);
         line_btn = (Button)findViewById(R.id.line_btn);
+        invite_btn = (Button) findViewById(R.id.invite_btn);
         canvas = (LinearLayout)findViewById(R.id.myCanvas);
+
+        //color
+        red_btn  = (Button)findViewById(R.id.red_btn);
+        blue_btn = (Button)findViewById(R.id.blue_btn);
 
 
 
@@ -68,6 +89,11 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         circle_btn.setOnClickListener(clickHandler);
         line_btn.setOnClickListener(clickHandler);
         freehand_btn.setOnClickListener(clickHandler);
+        invite_btn.setOnClickListener(clickHandler);
+
+        //set color click
+        red_btn.setOnClickListener(colorHandler);
+        blue_btn.setOnClickListener(colorHandler);
 
         getChannel();
     }
@@ -98,9 +124,31 @@ public class ShareableCanvasActivity extends AppCompatActivity {
                 case R.id.line_btn:
                     canvasController.setPaintTool("line");
                     break;
+                case R.id.invite_btn:
+                    sendNotification();
+                    break;
+
             }
         }
     };
+
+    private View.OnClickListener colorHandler = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.red_btn:
+                    changeColor(Color.RED);
+                    break;
+                case R.id.blue_btn:
+                    changeColor(Color.BLUE);
+                    break;
+            }
+        }
+    };
+
+    private void changeColor(int color){
+        canvasController.setPaintColor(color);
+    }
 
     private void deleteDatabase(){
         databaseReference.child("coba_delete").orderByChild("v1").equalTo("1.1").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -167,7 +215,58 @@ public class ShareableCanvasActivity extends AppCompatActivity {
     public void prepareCanvasView(){
         canvasController = new ShareableCanvasView(this,channel_id);
         canvasController.setBackgroundColor(Color.WHITE);
-        canvas.addView(canvasController, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        canvas.addView(canvasController,canvas.getWidth(),canvas.getHeight());
         mView = canvas;
     }
+
+    private void sendNotification (){
+
+        if(receiver.getToken().equals(""))
+            return;
+
+        final ProgressDialog progressDialog = new ProgressDialog(ShareableCanvasActivity.this);
+        progressDialog.setTitle("Sending Notification");
+        progressDialog.setMessage("please wait....");
+        progressDialog.show();
+
+        Retrofit retrofit = new Retrofit.Builder().baseUrl("https://fcm.googleapis.com").addConverterFactory(GsonConverterFactory.create()).build();
+        Gson gson = new Gson();
+        Type type = new TypeToken<GCMRequest>() {}.getType();
+        GCMRequest gcmRequest = new GCMRequest(receiver.getToken()
+                ,new User(firebaseUser.getUid(),firebaseUser.getEmail(), firebaseUser.getDisplayName(), FirebaseInstanceId.getInstance().getToken()+"",firebaseUser.getPhotoUrl().toString())
+                ,"shareable_canvas");
+
+        Type jsonObjectType = new TypeToken<JsonObject>(){}.getType();
+        JsonObject jsonData = gson.fromJson(gson.toJson(gcmRequest,type),jsonObjectType);
+        Log.d("jsonData",jsonData.toString());
+
+        ServiceMessaging serviceMessaging = retrofit.create(ServiceMessaging.class);
+        Call<JsonElement> sendNotification = serviceMessaging.sendNotification("key=AAAAMcvxv1U:APA91bHeOlyavQ32g0sFldoXUmKI_xD0EbA5q5y-3nebcpQCFk8vVM_W0BCSeueL2_FHf4ya_K7kksAfn10qSGiKmH0bRnGBEwOJU2YREbS2st0ybU37SHsnqhCIXV_-TSpQY62pWMF1",
+                "application/json",jsonData);
+
+
+        sendNotification.enqueue(new Callback<JsonElement>() {
+            @Override
+            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+                Log.d("responseNotif",response.body().toString());
+                Integer isSuccess = response.body().getAsJsonObject().get("success").getAsInt();
+                Log.d("isSuccess", isSuccess+"");
+                if(isSuccess==1){
+                    Toast.makeText(ShareableCanvasActivity.this, "invitation sent", Toast.LENGTH_SHORT).show();
+                    invite_btn.setVisibility(View.GONE);
+                }
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<JsonElement> call, Throwable t) {
+                Log.d("responseNotif","failed");
+                Toast.makeText(ShareableCanvasActivity.this, "failed invite", Toast.LENGTH_SHORT).show();
+                t.printStackTrace();
+                progressDialog.dismiss();
+            }
+        });
+    }
+
+
 }

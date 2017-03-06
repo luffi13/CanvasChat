@@ -23,5 +23,4 @@ public interface ServiceMessaging {
     Call<JsonElement> sendNotification(@Header("Authorization") String key, @Header("Content-Type") String contentType,
                                        @Body JsonObject data);
 
-
 }

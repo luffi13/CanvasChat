@@ -1,18 +1,12 @@
 package com.example.luffiadityasandy.canvaschat.activity;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Environment;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -27,7 +21,9 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.luffiadityasandy.canvaschat.R;
-import com.example.luffiadityasandy.canvaschat.ViewHolder.MessageHolder;
+import com.example.luffiadityasandy.canvaschat.object.GCMRequest;
+import com.example.luffiadityasandy.canvaschat.service.ServiceMessaging;
+import com.example.luffiadityasandy.canvaschat.view_holder.MessageHolder;
 import com.example.luffiadityasandy.canvaschat.adapter.ListMessageAdapter;
 import com.example.luffiadityasandy.canvaschat.canvas_handler.DrawView;
 import com.example.luffiadityasandy.canvaschat.object.Message;
@@ -45,19 +41,24 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.RemoteMessage;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.text.SimpleDateFormat;
+import java.lang.reflect.Type;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Objects;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class OfflineCanvasChatActvity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener{
 
@@ -199,7 +200,12 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
                 message.put("canvasUri",uri.toString());
                 message.put("time", ServerValue.TIMESTAMP);
                 message.put("sender",firebaseUser.getDisplayName());
-                databaseReference.child("messages").child(channel_id).push().setValue(message);
+                databaseReference.child("messages").child(channel_id).push().setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        sendNotification();
+                    }
+                });
 
                 progressDialog.dismiss();
                 Toast.makeText(OfflineCanvasChatActvity.this, uri.toString(), Toast.LENGTH_SHORT).show();
@@ -213,6 +219,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
     private void getChannel(){
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Connecting");
+
         progressDialog.setMessage("please wait..");
         progressDialog.show();
         progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -280,5 +287,47 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         });
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(listMessageAdapter);
+    }
+
+    private void sendNotification (){
+
+        if(receiver.getToken().equals(""))
+            return;
+
+        final ProgressDialog progressDialog = new ProgressDialog(OfflineCanvasChatActvity.this);
+        progressDialog.setTitle("Sending Notification");
+        progressDialog.setMessage("please wait....");
+        progressDialog.show();
+
+        Retrofit retrofit = new Retrofit.Builder().baseUrl("https://fcm.googleapis.com").addConverterFactory(GsonConverterFactory.create()).build();
+        Gson gson = new Gson();
+        Type type = new TypeToken<GCMRequest>() {}.getType();
+        GCMRequest gcmRequest = new GCMRequest(receiver.getToken()
+                ,new User(firebaseUser.getUid(),firebaseUser.getEmail(), firebaseUser.getDisplayName(), FirebaseInstanceId.getInstance().getToken()+"",firebaseUser.getPhotoUrl().toString())
+                ,"offline_canvas");
+
+        Type jsonObjectType = new TypeToken<JsonObject>(){}.getType();
+        JsonObject jsonData = gson.fromJson(gson.toJson(gcmRequest,type),jsonObjectType);
+        Log.d("jsonData",jsonData.toString());
+
+        ServiceMessaging serviceMessaging = retrofit.create(ServiceMessaging.class);
+        Call<JsonElement> sendNotification = serviceMessaging.sendNotification("key=AAAAMcvxv1U:APA91bHeOlyavQ32g0sFldoXUmKI_xD0EbA5q5y-3nebcpQCFk8vVM_W0BCSeueL2_FHf4ya_K7kksAfn10qSGiKmH0bRnGBEwOJU2YREbS2st0ybU37SHsnqhCIXV_-TSpQY62pWMF1",
+                "application/json",jsonData);
+
+
+        sendNotification.enqueue(new Callback<JsonElement>() {
+            @Override
+            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+                Log.d("responseNotif",response.body().toString());
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<JsonElement> call, Throwable t) {
+                Log.d("responseNotif","failed");
+                t.printStackTrace();
+                progressDialog.dismiss();
+            }
+        });
     }
 }

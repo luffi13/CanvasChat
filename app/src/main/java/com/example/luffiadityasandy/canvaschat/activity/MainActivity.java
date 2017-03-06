@@ -18,6 +18,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     FirebaseAuth firebaseAuth;
@@ -29,12 +32,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        if(firebaseUser==null){
+            startActivity(new Intent(this,LoginActivity.class));
+        }
         googleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this,this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseUser = firebaseAuth.getCurrentUser();
     }
 
     public void clickHandler(View v){
@@ -55,6 +61,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     public void signOut(){
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        Map<String,Object> nullToken = new HashMap<>();
+        nullToken.put("token",null);
+        databaseReference.child("user_detail").child(firebaseUser.getUid()).updateChildren(nullToken);
         firebaseAuth.signOut();
         Auth.GoogleSignInApi.signOut(googleApiClient);
         startActivity(new Intent(this, LoginActivity.class));

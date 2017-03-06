@@ -1,4 +1,4 @@
-package com.example.luffiadityasandy.canvaschat.ViewHolder;
+package com.example.luffiadityasandy.canvaschat.view_holder;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;

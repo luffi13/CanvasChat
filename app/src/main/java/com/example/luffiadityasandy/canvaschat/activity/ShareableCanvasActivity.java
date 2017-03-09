@@ -216,9 +216,24 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         canvasController = new ShareableCanvasView(this,channel_id);
         canvasController.setBackgroundColor(Color.WHITE);
         canvas.addView(canvasController,canvas.getWidth(),canvas.getHeight());
+        Log.d("size canvas", canvas.getWidth()+" "+canvas.getHeight());
         mView = canvas;
+        setCanvasSize(canvas.getWidth(),canvas.getHeight());
+
     }
 
+
+    //save our screen size in database for scaling
+    private void setCanvasSize(Integer width, Integer height){
+
+        HashMap<String,Object> screenData = new HashMap<>();
+        screenData.put("width",width);
+        screenData.put("height",height);
+        databaseReference.child("shareable_canvas/"+channel_id+"/screensize/"+firebaseUser.getUid()).setValue(screenData);
+    }
+
+
+    //invite friend to chat with us
     private void sendNotification (){
 
         if(receiver.getToken().equals(""))

@@ -4,110 +4,105 @@
     android:id="@+id/activity_shareable_canvas"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.luffiadityasandy.canvaschat.activity.ShareableCanvasActivity">
 
-    <TextView
-        android:id="@+id/judul"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:textStyle="bold"
-        android:text="Shareable Canvas" />
 
     <LinearLayout
         android:id="@+id/myCanvas"
         android:layout_below="@+id/judul"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_marginTop="16dp"
         android:layout_centerHorizontal="true"
         android:orientation="horizontal"/>
 
-    <LinearLayout
-        android:id="@+id/panelButton"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/myCanvas"
-        android:orientation="horizontal">
-        <Button
-            android:text="undo"
-            android:id="@+id/undo"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
-        <Button
-            android:text="redo"
-            android:id="@+id/redo"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
-        <Button
-            android:text="save"
-            android:id="@+id/saveCanvas"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
+        android:layout_alignParentBottom="true">
+        <LinearLayout
+            android:id="@+id/panelButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:text="undo"
+                android:id="@+id/undo"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+            <Button
+                android:text="redo"
+                android:id="@+id/redo"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+            <Button
+                android:text="save"
+                android:id="@+id/saveCanvas"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
 
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/shapePanel_ll"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/panelButton">
-        <Button
-            android:text="rect"
-            android:id="@+id/rectangle_btn"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
-        <Button
-            android:text="circle"
-            android:id="@+id/circle_btn"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
-        <Button
-            android:text="line"
-            android:id="@+id/line_btn"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
-        <Button
-            android:text="free"
-            android:id="@+id/freehand_btn"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-    <Button
-        android:id="@+id/invite_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/shapePanel_ll"
-        android:text="invite"/>
-    <LinearLayout
-        android:id="@+id/colorPanel_ll"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/panelButton">
-        <Button
-            android:text="red"
-            android:id="@+id/red_btn"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
-        <Button
-            android:text="blue"
-            android:id="@+id/blue_btn"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/shapePanel_ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/panelButton">
+            <Button
+                android:text="rect"
+                android:id="@+id/rectangle_btn"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+            <Button
+                android:text="circle"
+                android:id="@+id/circle_btn"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+            <Button
+                android:text="line"
+                android:id="@+id/line_btn"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+            <Button
+                android:text="free"
+                android:id="@+id/freehand_btn"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
 
-    </LinearLayout>
+        <Button
+            android:id="@+id/invite_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/shapePanel_ll"
+            android:text="invite"/>
+        <LinearLayout
+            android:id="@+id/colorPanel_ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/invite_btn">
+            <Button
+                android:text="red"
+                android:id="@+id/red_btn"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+            <Button
+                android:text="blue"
+                android:id="@+id/blue_btn"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+    </RelativeLayout>
+
 
 
 </RelativeLayout>

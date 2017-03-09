@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
     }
 
+
+
     public void signOut(){
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         Map<String,Object> nullToken = new HashMap<>();

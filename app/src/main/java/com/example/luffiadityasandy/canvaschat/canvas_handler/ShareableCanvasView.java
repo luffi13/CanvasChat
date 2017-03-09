@@ -39,16 +39,17 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
     private Canvas mCanvas;
     private Path mPath;
     private Paint mPaint;
-    private DatabaseReference databaseReference;
-    private float startX, startY, endX, endY;
-    String paintTool;
-    private float mX, mY;
     private static final float TOUCH_TOLERANCE = 4;
+
+    private DatabaseReference databaseReference;
+
+    private float startX, startY, endX, endY;
+    private float mX, mY;
     private int color;
+    String paintTool;
     private int strokeWidth;
 
     String tempKey = "";
-
 
     private ArrayList<ShareableItem> paths = new ArrayList<>();
     private ArrayList<ShareableItem> myPath = new ArrayList<>();
@@ -59,10 +60,13 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
     String listCoordinate = "";
     String mUid = "";
     String channel_id;
+    private HashMap<String,Integer> myScrenSize;
+    private HashMap<String,Integer> receiverScreenSize;
 
     public ShareableCanvasView(Context context, String channel_id)
     {
         super(context);
+
         databaseReference = FirebaseDatabase.getInstance().getReference();
         mUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         this.context = context;
@@ -87,7 +91,12 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         databaseReference.child("shareable_canvas").child(channel_id).child("messages").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+                //instance new Shareable path
                 ShareableItem newItem = dataSnapshot.getValue(ShareableItem.class);
+                newItem.setCanvasSize(myScrenSize.get("width"),myScrenSize.get("height"));
+                newItem.setPath();
+
                 Log.d("addChild",dataSnapshot.getValue().toString());
                 if(!newItem.getUid().equals(mUid)){
                     addPathFromDatabase(newItem);
@@ -140,6 +149,8 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
 
                 for (DataSnapshot child : dataSnapshot.getChildren()){
                     ShareableItem shareableItem = child.getValue(ShareableItem.class);
+                    shareableItem.setCanvasSize(myScrenSize.get("width"),myScrenSize.get("height"));
+                    shareableItem.setPath();
                     if(shareableItem.getUid().equals(mUid)){
                         addPathFromDatabase(shareableItem);
                         myPath.add(shareableItem);
@@ -152,6 +163,19 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
 
             }
         });
+    }
+
+
+    public void setMyScrenSize(HashMap<String,Integer> myScreenSize) {
+        this.myScrenSize = myScreenSize;
+    }
+
+    public HashMap<String, Integer> getMyScrenSize() {
+        return myScrenSize;
+    }
+
+    public void setReceiverScreenSize(HashMap<String, Integer> receiverScreenSize) {
+        this.receiverScreenSize = receiverScreenSize;
     }
 
     public void setPaintColor(int color){
@@ -232,7 +256,9 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         mPath.lineTo(mX, mY);
         mCanvas.drawPath(mPath, mPaint);
 
-        ShareableItem item = new ShareableItem(listCoordinate,paintTool, mUid,color,strokeWidth,tempKey);
+        ShareableItem item = new ShareableItem(listCoordinate,paintTool, mUid,color,strokeWidth,tempKey,myScrenSize.get("width"),myScrenSize.get("height"));
+        item.setCanvasSize(myScrenSize.get("width"),myScrenSize.get("height"));
+        item.setPath();
         paths.add(item);
         mPath = new Path();
         setPaintProperties();
@@ -371,7 +397,9 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
                 Path.Direction.CCW);
         mCanvas.drawPath(newPath,mPaint);
         String pointsInString = generatePointToString(edgePoints);
-        ShareableItem item = new ShareableItem(pointsInString,"circle",mUid,color,strokeWidth,tempKey);
+        ShareableItem item = new ShareableItem(pointsInString,"circle",mUid,color,strokeWidth,tempKey,myScrenSize.get("width"),myScrenSize.get("height"));
+        item.setCanvasSize(myScrenSize.get("width"),myScrenSize.get("height"));
+        item.setPath();
         paths.add(item);
         invalidate();
         setPaintProperties();
@@ -387,7 +415,9 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
                 Path.Direction.CCW);
         mCanvas.drawPath(newPath,mPaint);
         String pointsInString = generatePointToString(edgePoints);
-        ShareableItem item = new ShareableItem(pointsInString,"rectangle",mUid,color,strokeWidth,tempKey);
+        ShareableItem item = new ShareableItem(pointsInString,"rectangle",mUid,color,strokeWidth,tempKey,myScrenSize.get("width"),myScrenSize.get("height"));
+        item.setCanvasSize(myScrenSize.get("width"),myScrenSize.get("height"));
+        item.setPath();
         paths.add(item);
         invalidate();
         setPaintProperties();
@@ -402,7 +432,9 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         mCanvas.drawPath(newPath,mPaint);
 
         String pointsInString = startX+"<<"+startY+"<<"+endX+"<<"+endY;
-        ShareableItem item = new ShareableItem(pointsInString,"line",mUid,color,strokeWidth,tempKey);
+        ShareableItem item = new ShareableItem(pointsInString,"line",mUid,color,strokeWidth,tempKey,myScrenSize.get("width"),myScrenSize.get("height"));
+        item.setCanvasSize(myScrenSize.get("width"),myScrenSize.get("height"));
+        item.setPath();
         paths.add(item);
         invalidate();
         setPaintProperties();

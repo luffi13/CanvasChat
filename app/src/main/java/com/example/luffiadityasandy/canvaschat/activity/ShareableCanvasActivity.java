@@ -17,6 +17,7 @@ import com.example.luffiadityasandy.canvaschat.canvas_handler.DrawView;
 import com.example.luffiadityasandy.canvaschat.canvas_handler.ShareableCanvasView;
 import com.example.luffiadityasandy.canvaschat.object.GCMRequest;
 import com.example.luffiadityasandy.canvaschat.object.User;
+import com.example.luffiadityasandy.canvaschat.service.InstanceIdService;
 import com.example.luffiadityasandy.canvaschat.service.ServiceMessaging;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -218,18 +219,42 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         canvas.addView(canvasController,canvas.getWidth(),canvas.getHeight());
         Log.d("size canvas", canvas.getWidth()+" "+canvas.getHeight());
         mView = canvas;
-        setCanvasSize(canvas.getWidth(),canvas.getHeight());
-
+        setMyCanvasSize(canvas.getWidth(),canvas.getHeight());
+//        getReceiverCanvas();
     }
 
 
     //save our screen size in database for scaling
-    private void setCanvasSize(Integer width, Integer height){
+    private void setMyCanvasSize(Integer width, Integer height){
+        HashMap<String,Integer> myScreenSize = new HashMap<>();
+        myScreenSize.put("width",width);
+        myScreenSize.put("height",height);
+        canvasController.setMyScrenSize(myScreenSize);
+        databaseReference.child("shareable_canvas/"+channel_id+"/screensize/"+firebaseUser.getUid()).setValue(myScreenSize);
+    }
 
-        HashMap<String,Object> screenData = new HashMap<>();
-        screenData.put("width",width);
-        screenData.put("height",height);
-        databaseReference.child("shareable_canvas/"+channel_id+"/screensize/"+firebaseUser.getUid()).setValue(screenData);
+    //get receiver screen size
+    private void getReceiverCanvas(){
+        databaseReference.child("shareable_canvas/"+channel_id+"/screensize/"+firebaseUser.getUid())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.getValue()==null){
+                            canvasController.setReceiverScreenSize(canvasController.getMyScrenSize());
+                            return;
+                        }
+                        HashMap<String,Integer> receiverScreenSize = new HashMap<>();
+                        receiverScreenSize.put("width",Integer.parseInt(dataSnapshot.child("width").getValue()+""));
+                        receiverScreenSize.put("height",Integer.parseInt(dataSnapshot.child("height").getValue()+""));
+                        canvasController.setReceiverScreenSize(receiverScreenSize);
+                        Log.d("receiverScreen", receiverScreenSize.get("width")+" "+receiverScreenSize.get("height"));
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
     }
 
 

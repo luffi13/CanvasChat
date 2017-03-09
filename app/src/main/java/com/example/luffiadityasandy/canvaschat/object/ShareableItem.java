@@ -7,12 +7,14 @@ import android.util.Log;
 import android.util.Pair;
 
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.HashMap;
 
 /**
  * Created by Luffi Aditya Sandy on 21/02/2017.
  */
+
 
 public class ShareableItem {
     private String points;
@@ -21,8 +23,19 @@ public class ShareableItem {
     private Integer color;
     private Integer strokeWidth;
     private String key;
+    private Integer screenWidth;
+    private Integer screenHeight;
 
-    public ShareableItem(String points, String type, String uid, int color, int strokeWidth, String key) {
+    @Exclude
+    private Integer canvasWidth;
+
+    @Exclude
+    private Integer canvasHeight;
+
+    @Exclude
+    private Path path;
+
+    public ShareableItem(String points, String type, String uid, int color, int strokeWidth, String key, Integer width, Integer height) {
         Log.d("adfa","constructor ny");
         this.points = points;
         this.type = type;
@@ -30,8 +43,11 @@ public class ShareableItem {
         this.color = color;
         this.strokeWidth = strokeWidth;
         this.key = key;
+        this.screenWidth= width;
+        this.screenHeight = height;
     }
     public ShareableItem() {
+
     }
 
     public String getPoints() {
@@ -74,6 +90,22 @@ public class ShareableItem {
         this.strokeWidth = strokeWidth;
     }
 
+    public Integer getScreenWidth() {
+        return screenWidth;
+    }
+
+    public void setScreenWidth(Integer screenWidth) {
+        this.screenWidth = screenWidth;
+    }
+
+    public Integer getScreenHeight() {
+        return screenHeight;
+    }
+
+    public void setScreenHeight(Integer screenHeight) {
+        this.screenHeight = screenHeight;
+    }
+
     public String getKey() {
         return key;
     }
@@ -90,32 +122,33 @@ public class ShareableItem {
     }
 
     @Exclude
-    public Path getPath(){
-        Path path = null;
-
+    public void setPath(){
         if(this.getType().equals("freehand")){
-            path = getFreeHand();
+            path= getFreeHand();
         }
         else if(this.getType().equals("rectangle")){
             HashMap<String, Float> listPoint = stringToPoint(this.getPoints());
-            path = getRectangle(listPoint.get("left"),listPoint.get("top"),
+            path= getRectangle(listPoint.get("left"),listPoint.get("top"),
                     listPoint.get("right"),listPoint.get("bottom"));
         }
         else if(this.getType().equals("circle")){
             HashMap<String, Float> listPoint = stringToPoint(this.getPoints());
-            path = getCircle(listPoint.get("left"),listPoint.get("top"),
+            path= getCircle(listPoint.get("left"),listPoint.get("top"),
                     listPoint.get("right"),listPoint.get("bottom"));
         }
         else if(this.getType().equals("line")){
             String[]listData = this.getPoints().split("<<");
 
-            path = getLine(Float.parseFloat(listData[0]),
+            path= getLine(Float.parseFloat(listData[0]),
                     Float.parseFloat(listData[1]),
                     Float.parseFloat(listData[2]),
                     Float.parseFloat(listData[3]));
         }
+    }
 
-        return path;
+    @Exclude
+    public Path getPath(){
+        return this.path;
     }
 
 
@@ -126,8 +159,8 @@ public class ShareableItem {
         Path newPath = new Path();
         Float newX = null, newY = null;
         for(int i = 0 ; i < listPointString.length ; i ++){
-            Float x = Float.parseFloat(listPointString[i].split(",")[0]);
-            Float y = Float.parseFloat(listPointString[i].split(",")[1]);
+            Float x = adjustXPoint(Float.parseFloat(listPointString[i].split(",")[0]));
+            Float y = adjustYPoint(Float.parseFloat(listPointString[i].split(",")[1]));
 
             if(i==0){
                 newPath.moveTo(x,y);
@@ -154,23 +187,58 @@ public class ShareableItem {
     @Exclude
     private Path getCircle(float left, float top,  float right, float bottom){
         Path newPath = new Path();
-        newPath.addOval(left,top,right,bottom, Path.Direction.CCW);
+        newPath.addOval(
+                adjustXPoint(left),
+                adjustYPoint(top),
+                adjustXPoint(right),
+                adjustYPoint(bottom),
+                Path.Direction.CCW);
         return newPath;
     }
 
     @Exclude
     private Path getRectangle(float left, float top,  float right, float bottom){
         Path newPath = new Path();
-        newPath.addRect(left,top,right,bottom, Path.Direction.CCW);
+        newPath.addRect(
+                adjustXPoint(left),
+                adjustYPoint(top),
+                adjustXPoint(right),
+                adjustYPoint(bottom)
+                , Path.Direction.CCW);
         return newPath;
     }
 
     @Exclude
     private Path getLine(float startX, float startY, float endX, float endY){
         Path newPath = new Path();
-        newPath.moveTo(startX,startY);
-        newPath.lineTo(endX,endY);
+        newPath.moveTo(
+                adjustXPoint(startX),
+                adjustYPoint(startY));
+        newPath.lineTo(
+                adjustXPoint(endX),
+                adjustYPoint(endY));
         return newPath;
+    }
+
+    @Exclude
+    public void setCanvasSize(int width, int height){
+        this.canvasWidth = width;
+        this.canvasHeight = height;
+    }
+
+
+    private Float adjustXPoint(Float point){
+        Float param = (float)canvasWidth/screenWidth;
+        Float index = (float)canvasWidth/screenWidth;
+        Float pointAwal = param*point;
+
+        Log.d("adjustX", index+" "+pointAwal);
+        return param*point;
+    }
+
+    private Float adjustYPoint(Float point){
+        Float param = (float)canvasHeight/screenHeight;
+        return param*point;
     }
 
     private HashMap<String,Float> stringToPoint(String data){

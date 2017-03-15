@@ -40,6 +40,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import yuku.ambilwarna.AmbilWarnaDialog;
 
 public class ShareableCanvasActivity extends AppCompatActivity {
 
@@ -54,6 +55,8 @@ public class ShareableCanvasActivity extends AppCompatActivity {
     Button undo, redo, save ,
             freehand_btn, circle_btn, rectangle_btn, line_btn, invite_btn,
             red_btn, blue_btn;
+
+    AmbilWarnaDialog colorPickerDialog ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,8 +97,9 @@ public class ShareableCanvasActivity extends AppCompatActivity {
 
         //set color click
         red_btn.setOnClickListener(colorHandler);
-        blue_btn.setOnClickListener(colorHandler);
+        blue_btn.setOnClickListener( colorHandler);
 
+        //
         getChannel();
     }
 
@@ -141,11 +145,27 @@ public class ShareableCanvasActivity extends AppCompatActivity {
                     changeColor(Color.RED);
                     break;
                 case R.id.blue_btn:
-                    changeColor(Color.BLUE);
+                    openDialog(false);
                     break;
             }
         }
     };
+
+    void openDialog(boolean supportsAlpha) {
+        AmbilWarnaDialog dialog = new AmbilWarnaDialog(ShareableCanvasActivity.this, Color.BLACK, supportsAlpha, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+            @Override
+            public void onOk(AmbilWarnaDialog dialog, int color) {
+                Toast.makeText(getApplicationContext(), "ok", Toast.LENGTH_SHORT).show();
+                canvasController.setPaintColor(color);
+            }
+
+            @Override
+            public void onCancel(AmbilWarnaDialog dialog) {
+                Toast.makeText(getApplicationContext(), "cancel", Toast.LENGTH_SHORT).show();
+            }
+        });
+        dialog.show();
+    }
 
     private void changeColor(int color){
         canvasController.setPaintColor(color);

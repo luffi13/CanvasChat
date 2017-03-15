@@ -49,7 +49,7 @@ public class MessagingService extends com.google.firebase.messaging.FirebaseMess
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
             stackBuilder.addParentStack(ShareableCanvasActivity.class);
             stackBuilder.addNextIntent(resultIntent);
-            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(2,PendingIntent.FLAG_UPDATE_CURRENT);
             mBuilder.setContentIntent(resultPendingIntent);
         }
         else if(typeMessage.equals("offline_canvas")) {
@@ -58,11 +58,12 @@ public class MessagingService extends com.google.firebase.messaging.FirebaseMess
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
             stackBuilder.addParentStack(OfflineCanvasChatActvity.class);
             stackBuilder.addNextIntent(resultIntent);
-            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(2,PendingIntent.FLAG_UPDATE_CURRENT);
             mBuilder.setContentIntent(resultPendingIntent);
         }
 
         NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
         notificationManager.notify(1,mBuilder.build());
     }
 

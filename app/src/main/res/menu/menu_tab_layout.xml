@@ -6,5 +6,20 @@
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
-        app:showAsAction="never" />
+        app:showAsAction="never">
+        <item
+            android:id="@+id/item1"
+            android:title="menu" />
+        <item
+            android:id="@+id/signOut"
+            android:title="sign out" />
+    </item>
+    <item
+        android:id="@+id/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="search"
+        app:showAsAction="ifRoom"
+        android:orderInCategory="1"
+        android:menuCategory="secondary"/>
+
 </menu>

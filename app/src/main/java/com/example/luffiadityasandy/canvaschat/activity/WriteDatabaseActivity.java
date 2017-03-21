@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -13,9 +15,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.luffiadityasandy.canvaschat.R;
+import com.example.luffiadityasandy.canvaschat.adapter.SearchUserAdapter;
 import com.example.luffiadityasandy.canvaschat.object.GCMRequest;
 import com.example.luffiadityasandy.canvaschat.object.ShareableItem;
 import com.example.luffiadityasandy.canvaschat.object.User;
@@ -30,6 +34,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
@@ -40,6 +45,8 @@ import com.google.gson.reflect.TypeToken;
 import org.json.JSONObject;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -54,11 +61,14 @@ public class WriteDatabaseActivity extends AppCompatActivity implements GoogleAp
     DatabaseReference reference;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
-    EditText sender, receiver, message;
+    EditText editText;
     GoogleApiClient googleApiClient;
     String username;
-    Button insert_btn;
+    Button process_btn;
+    ListView listView;
 
+    ArrayList<User> listUser ;
+    SearchUserAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,26 +94,48 @@ public class WriteDatabaseActivity extends AppCompatActivity implements GoogleAp
 
         reference = database.getReference();
 
-        sender = (EditText)findViewById(R.id.sender);
-        receiver = (EditText)findViewById(R.id.receiver);
-        message = (EditText)findViewById(R.id.message);
-        insert_btn = (Button)findViewById(R.id.insert_btn);
+        editText = (EditText)findViewById(R.id.editText);
+        process_btn = (Button)findViewById(R.id.insert_btn);
+        listView = (ListView)findViewById(R.id.listView);
 
-        sender.setText(firebaseUser.getDisplayName());
+        editText.addTextChangedListener(textWatcher);
+        listUser = new ArrayList<>();
+        adapter = new SearchUserAdapter(this,R.layout.item_friend,listUser);
+        listView.setAdapter(adapter);
 
 
-        insert_btn.setOnClickListener(new View.OnClickListener() {
+        process_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //insertNewFriend();
                 Log.d("masuk ", "masuk");
-
-                getDataWithPaint();
+                getAlluser();
                 //insertNewMessage(new Message(sender.getText().toString(),receiver.getText().toString(),message.getText().toString()));
             }
         });
 
     }
+
+    private TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+                try {
+                    adapter.getFilter().filter(s.toString().toLowerCase());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
+    };
 
     private void getDataWithPaint(){
         reference.child("shareable_canvas").child("test_with_paint").child("key1").addValueEventListener(new ValueEventListener() {
@@ -121,6 +153,24 @@ public class WriteDatabaseActivity extends AppCompatActivity implements GoogleAp
         });
     }
 
+    private void getAlluser(){
+        reference.child("user_detail").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot child : dataSnapshot.getChildren()){
+                    listUser.add(child.getValue(User.class));
+                    adapter.notifyDataSetChanged();
+                    System.out.println(child.getValue(User.class).getName());
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
 
     private void sendNotification(){
         final ProgressDialog progressDialog = new ProgressDialog(WriteDatabaseActivity.this);

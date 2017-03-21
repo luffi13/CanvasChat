@@ -1,4 +1,4 @@
-package com.example.luffiadityasandy.canvaschat;
+package com.example.luffiadityasandy.canvaschat.fragment;
 
 
 import android.os.Bundle;
@@ -10,13 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.luffiadityasandy.canvaschat.activity.ListFriendActivity;
-import com.example.luffiadityasandy.canvaschat.activity.TabLayoutActivity;
+import com.example.luffiadityasandy.canvaschat.R;
 import com.example.luffiadityasandy.canvaschat.adapter.ListFriendAdapter;
 import com.example.luffiadityasandy.canvaschat.object.User;
 import com.example.luffiadityasandy.canvaschat.view_holder.FriendViewHolder;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,7 +22,6 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -39,9 +35,10 @@ public class ListFriendFragment extends Fragment {
     private static final String TAG = "ListFriendFragment";
 
     DatabaseReference databaseReference;
-    ListFriendAdapter adapter;
-    RecyclerView recyclerView;
-    LinearLayoutManager layoutManager;
+    ListFriendAdapter adapterFriend;
+    ListFriendAdapter requestAdapter;
+    RecyclerView friend_rv, request_rv;
+    LinearLayoutManager friendManager, requestManager;
 
     private ArrayList<User> listFriend;
     String mUid="";
@@ -64,9 +61,10 @@ public class ListFriendFragment extends Fragment {
         super.onCreate(savedInstanceState);
         mUid = getArguments().getString("uid");
         databaseReference = FirebaseDatabase.getInstance().getReference("/friendship/"+mUid);
-        adapter = new ListFriendAdapter(User.class, R.layout.item_friend, FriendViewHolder.class,databaseReference);
-        adapter.setActivity(getActivity());
-        layoutManager = new LinearLayoutManager(getActivity());
+        adapterFriend = new ListFriendAdapter(User.class, R.layout.item_friend, FriendViewHolder.class,databaseReference.orderByChild("state").equalTo("friend"));
+        adapterFriend.setActivity(getActivity());
+        requestAdapter = new ListFriendAdapter(User.class, R.layout.item_friend, FriendViewHolder.class,databaseReference.orderByChild("state").equalTo("request"));
+        requestAdapter.setActivity(getActivity());
     }
 
     @Override
@@ -74,9 +72,16 @@ public class ListFriendFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_list_friend, container, false);
-        recyclerView = (RecyclerView)rootView.findViewById(R.id.rv_listFriend);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adapter);
+        friend_rv = (RecyclerView)rootView.findViewById(R.id.rv_listFriend);
+        request_rv = (RecyclerView)rootView.findViewById(R.id.rv_listRequest);
+
+        friendManager = new LinearLayoutManager(getActivity());
+        requestManager = new LinearLayoutManager(getActivity());
+        friend_rv.setAdapter(adapterFriend);
+        friend_rv.setLayoutManager(friendManager);
+
+        request_rv.setAdapter(requestAdapter);
+        request_rv.setLayoutManager(requestManager);
 
         return rootView;
     }

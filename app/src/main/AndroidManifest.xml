@@ -10,15 +10,13 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.SignatureActivity"></activity>
-        <activity android:name=".activity.LoginActivity"></activity>
-        <activity android:name=".activity.WriteDatabaseActivity" />
+        <activity android:name=".activity.SignatureActivity" />
+        <activity android:name=".activity.LoginActivity" />
+        <activity android:name=".activity.WriteDatabaseActivity"></activity>
         <activity android:name=".activity.ListFriendActivity" />
         <activity android:name=".activity.OfflineCanvasChatActvity" />
-        <activity android:name=".activity.MainActivity">
-
-        </activity>
-        <activity android:name=".activity.ShareableCanvasActivity"></activity>
+        <activity android:name=".activity.MainActivity"></activity>
+        <activity android:name=".activity.ShareableCanvasActivity" />
 
         <service
             android:name=".service.InstanceIdService"
@@ -42,6 +40,8 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity android:name=".activity.SearchFriendActivity">
         </activity>
     </application>
 

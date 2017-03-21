@@ -13,32 +13,24 @@
 
 
     <EditText
-        android:id="@+id/sender"
+        android:id="@+id/editText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="sender"
         android:inputType="textPersonName"
         />
-    <EditText
-        android:id="@+id/receiver"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="receiver"
-        android:inputType="textPersonName"/>
-    <EditText
-        android:id="@+id/message"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="message"
-        android:minLines="4"
-        android:inputType="textLongMessage"/>
 
     <Button
         android:id="@+id/insert_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="send"
+        android:text="process"
         />
+
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"></ListView>
 
 
 </LinearLayout>

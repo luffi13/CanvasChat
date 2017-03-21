@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">CanvasChat</string>
     <string name="sign_out">Sign Out</string>
-    <string name="title_activity_tab_layout">TabLayoutActivity</string>
+    <string name="title_activity_tab_layout">Hello </string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
 

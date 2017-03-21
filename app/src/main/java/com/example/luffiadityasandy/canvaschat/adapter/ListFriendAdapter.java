@@ -14,6 +14,7 @@ import com.example.luffiadityasandy.canvaschat.object.User;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Query;
 
 /**
  * Created by Luffi Aditya Sandy on 16/02/2017.
@@ -22,7 +23,11 @@ import com.google.firebase.database.DatabaseReference;
 public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHolder> {
     private Activity activity;
 
-    public ListFriendAdapter(Class modelClass, int modelLayout, Class viewHolderClass, DatabaseReference ref) {
+    public ListFriendAdapter(Class<User> modelClass, int modelLayout, Class<FriendViewHolder> viewHolderClass, DatabaseReference ref) {
+        super(modelClass, modelLayout, viewHolderClass, ref);
+    }
+
+    public ListFriendAdapter(Class<User> modelClass, int modelLayout, Class<FriendViewHolder> viewHolderClass, Query ref) {
         super(modelClass, modelLayout, viewHolderClass, ref);
     }
 

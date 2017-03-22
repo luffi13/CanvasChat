@@ -15,6 +15,7 @@ public class User implements Serializable {
     public String email;
     public String name;
     public String token;
+    public String state;
 
     public User(String uid, String email, String name, String token,String photoUrl) {
         this.uid = uid;
@@ -71,4 +72,11 @@ public class User implements Serializable {
         this.token = token;
     }
 
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
 }

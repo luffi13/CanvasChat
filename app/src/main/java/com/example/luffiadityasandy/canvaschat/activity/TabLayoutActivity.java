@@ -1,6 +1,7 @@
 package com.example.luffiadityasandy.canvaschat.activity;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -17,19 +18,33 @@ import android.widget.Toast;
 import com.example.luffiadityasandy.canvaschat.fragment.ListChatFragment;
 import com.example.luffiadityasandy.canvaschat.fragment.ListFriendFragment;
 import com.example.luffiadityasandy.canvaschat.R;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
-public class TabLayoutActivity extends AppCompatActivity {
+import java.util.HashMap;
+import java.util.Map;
+
+public class TabLayoutActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private FirebaseUser mUser;
+    GoogleApiClient googleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tab_layout);
         mUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this,this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API)
+                .build();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(mUser.getDisplayName().split(" ")[0]);
@@ -47,6 +62,11 @@ public class TabLayoutActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(mViewPager);
 
 
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Toast.makeText(this, "connection Problem", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -68,9 +88,23 @@ public class TabLayoutActivity extends AppCompatActivity {
             case R.id.action_search:
                 startActivity(new Intent(this,SearchFriendActivity.class));
                 return true;
+            case R.id.signOut:
+                signOut();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void signOut(){
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        Map<String,Object> nullToken = new HashMap<>();
+        nullToken.put("token",null);
+        databaseReference.child("user_detail").child(mUser.getUid()).updateChildren(nullToken);
+        FirebaseAuth.getInstance().signOut();
+        Auth.GoogleSignInApi.signOut(googleApiClient);
+        startActivity(new Intent(this, LoginActivity.class));
+        finish();
     }
 
 

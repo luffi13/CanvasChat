@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,8 +20,21 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.luffiadityasandy.canvaschat.R;
 import com.example.luffiadityasandy.canvaschat.object.User;
+import com.example.luffiadityasandy.canvaschat.view_holder.PreviewHolder;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -32,7 +46,10 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class SearchUserAdapter extends ArrayAdapter<User> {
     private List<User> allData;
     private List<User> filteredData;
+    User mUser;
+    DatabaseReference databaseReference;
 
+    private HashMap<String,User> listFriend;
     private int resource;
     private Context context;
 
@@ -43,7 +60,11 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
         this.resource = resource;
         this.allData = objects;
         this.filteredData = objects;
-
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        mUser = new User(firebaseUser.getUid(),firebaseUser.getEmail(),firebaseUser.getDisplayName(), FirebaseInstanceId.getInstance().getToken(),firebaseUser.getPhotoUrl().toString());
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        listFriend = new HashMap<>();
+        getListFriend();
     }
 
     @NonNull
@@ -126,11 +147,28 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
         };
     }
 
-    private void initiatePopUpWindow(User user, View view){
-        PopupWindow popupWindow;
+    private void getListFriend(){
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("friendship/"+mUser.getUid());
+
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                GenericTypeIndicator<HashMap<String,User>> type = new GenericTypeIndicator<HashMap<String,User>>() {};
+                listFriend = dataSnapshot.getValue(type);
+                SearchUserAdapter.this.notifyDataSetChanged();
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void initiatePopUpWindow(final User user, View view){
+        final PopupWindow popupWindow;
         LayoutInflater layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = layoutInflater.inflate(R.layout.user_preview,null);
-        popupWindow = new PopupWindow(layout,500,500,true);
+        popupWindow = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,true);
         popupWindow.showAtLocation(view, Gravity.CENTER,0,0);
 
         PreviewHolder previewHolder = new PreviewHolder(layout);
@@ -142,32 +180,63 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
         else {
             Glide.with(context).load(user.getPhotoUrl()+"?sz=300").into(previewHolder.userPhoto);
         }
-        previewHolder.addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(context, "add button clicked", Toast.LENGTH_SHORT).show();
-            }
-        });
+        if (listFriend!=null&&listFriend.get(user.getUid())!=null){
+            previewHolder.addButton.setVisibility(View.GONE);
+        }
+        else {
+            previewHolder.addButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    addFriend(user);
+                    popupWindow.dismiss();
+                }
+            });
+        }
 
+    }
+
+    private void addFriend(final User friend){
+        friend.setState("friend");
+        databaseReference.child("friendship/"+mUser.getUid()+"/"+friend.getUid()).setValue(friend)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        if(listFriend==null){
+                            listFriend = new HashMap<>();
+                        }
+                        listFriend.put(friend.getUid(),friend);
+                        SearchUserAdapter.this.notifyDataSetChanged();
+                        Toast.makeText(context, "friend added!", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(context, "failed to add friend", Toast.LENGTH_SHORT).show();
+                    }
+                });
+        mUser.setState("request");
+        databaseReference.child("friendship/"+friend.getUid()+"/"+mUser.getUid()).setValue(mUser)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+
+                    }
+                });
     }
 
     private class UserHolder{
-        public TextView displayName;
-        public CircleImageView userPhoto;
-        public LinearLayout user_ll;
+        TextView displayName;
+        CircleImageView userPhoto;
+        LinearLayout user_ll;
 
     }
 
-    private class PreviewHolder{
-        public TextView name_tv, email_tv;
-        public CircleImageView userPhoto;
-        public ImageView addButton;
 
-        public PreviewHolder(View view){
-            name_tv = (TextView)view.findViewById(R.id.name_tv);
-            email_tv = (TextView)view.findViewById(R.id.email_tv);
-            userPhoto = (CircleImageView)view.findViewById(R.id.photo);
-            addButton = (ImageView)view.findViewById(R.id.add_icon);
-        }
-    }
 }

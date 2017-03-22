@@ -2,6 +2,8 @@ package com.example.luffiadityasandy.canvaschat.activity;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -50,10 +52,32 @@ public class SearchFriendActivity extends AppCompatActivity {
         adapter = new SearchUserAdapter(this,R.layout.item_search_user,listUser);
         listView.setAdapter(adapter);
 
+        keyword_et.addTextChangedListener(textWatcher);
+
         getAllUser();
-        getListFriend();
 
     }
+
+    private TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            try {
+                adapter.getFilter().filter(s.toString().toLowerCase());
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
+    };
 
 
     private void getAllUser(){
@@ -75,23 +99,7 @@ public class SearchFriendActivity extends AppCompatActivity {
         });
     }
 
-    private void getListFriend(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("friendship/"+mUser.getUid());
 
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                GenericTypeIndicator<HashMap<String,User>> type = new GenericTypeIndicator<HashMap<String,User>>() {};
-                listFriend = dataSnapshot.getValue(type);
-                Log.d("listfriendrespond", "onDataChange: "+listFriend.get("friendkey1").getName());
-
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.d("SearchActivity", "onCancelled: "+databaseError.getMessage());
-            }
-        });
-    }
 
 
 }

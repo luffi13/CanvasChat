@@ -12,12 +12,34 @@
         android:id="@+id/messageList_rv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/createCanvas_btn"/>
-    <Button
-        android:id="@+id/createCanvas_btn"
-        android:text="create canvas"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_above="@+id/message_rl"/>
+    <RelativeLayout
+        android:id="@+id/message_rl"
         android:layout_alignParentBottom="true"
-        />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_centerVertical="true"
+            android:id="@+id/createCanvas_btn"
+            android:src="@android:drawable/ic_input_add"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:id="@+id/textMessage_et"
+            android:hint="type here ......"
+            android:layout_toLeftOf="@+id/sendText_btn"
+            android:layout_toRightOf="@+id/createCanvas_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <ImageView
+            android:id="@+id/sendText_btn"
+            android:src="@android:drawable/ic_media_play"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+
+
+
 </RelativeLayout>

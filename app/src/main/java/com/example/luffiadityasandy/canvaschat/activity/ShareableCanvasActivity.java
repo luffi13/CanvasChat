@@ -54,7 +54,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
     ShareableCanvasView canvasController;
     Button undo, redo, save ,
             freehand_btn, circle_btn, rectangle_btn, line_btn, invite_btn,
-            red_btn, blue_btn;
+            colorPicker_btn;
 
     AmbilWarnaDialog colorPickerDialog ;
 
@@ -80,8 +80,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         canvas = (LinearLayout)findViewById(R.id.myCanvas);
 
         //color
-        red_btn  = (Button)findViewById(R.id.red_btn);
-        blue_btn = (Button)findViewById(R.id.blue_btn);
+        colorPicker_btn= (Button)findViewById(R.id.colorPicker_btn);
 
 
 
@@ -96,8 +95,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         invite_btn.setOnClickListener(clickHandler);
 
         //set color click
-        red_btn.setOnClickListener(colorHandler);
-        blue_btn.setOnClickListener( colorHandler);
+        colorPicker_btn.setOnClickListener( colorHandler);
 
         //
         getChannel();
@@ -141,10 +139,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             switch (v.getId()){
-                case R.id.red_btn:
-                    changeColor(Color.RED);
-                    break;
-                case R.id.blue_btn:
+                case R.id.colorPicker_btn:
                     openDialog(false);
                     break;
             }

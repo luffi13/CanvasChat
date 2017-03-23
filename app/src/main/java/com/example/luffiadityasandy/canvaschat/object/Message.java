@@ -1,21 +1,35 @@
 package com.example.luffiadityasandy.canvaschat.object;
 
+import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.database.ServerValue;
 
 /**
  * Created by Luffi Aditya Sandy on 15/02/2017.
  */
 
+@IgnoreExtraProperties
 public class Message {
-    public String sender;
-    public Long time;
+    private String sender;
+    private String message;
+    private Long time;
+    private String type;
 
-    public String getCanvasUri() {
-        return canvasUri;
+    public Message() {
     }
 
-    public void setCanvasUri(String canvasUri) {
-        this.canvasUri = canvasUri;
+    public Message(String message, String sender, Long time, String type) {
+        this.sender = sender;
+        this.time = time;
+        this.message = message;
+        this.type = type;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String canvasUri) {
+        this.message = canvasUri;
     }
 
     public Long getTime() {
@@ -34,14 +48,11 @@ public class Message {
         this.sender = sender;
     }
 
-    public String canvasUri;
-
-    public Message() {
+    public String getType() {
+        return type;
     }
 
-    public Message(String canvasUri, String sender, Long time) {
-        this.sender = sender;
-        this.time = time;
-        this.canvasUri = canvasUri;
+    public void setType(String type) {
+        this.type = type;
     }
 }

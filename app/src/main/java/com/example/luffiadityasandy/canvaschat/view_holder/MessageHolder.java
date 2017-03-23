@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.example.luffiadityasandy.canvaschat.R;
 
@@ -17,6 +18,7 @@ public class MessageHolder extends RecyclerView.ViewHolder {
     public CircleImageView userPhotoRight,userPhotoLeft;
     public ImageView imageMessage;
     public LinearLayout message_ll;
+    public TextView textMessage_tv;
 
     public MessageHolder(View itemView) {
         super(itemView);
@@ -24,6 +26,7 @@ public class MessageHolder extends RecyclerView.ViewHolder {
         imageMessage = (ImageView)itemView.findViewById(R.id.imageMessage);
         message_ll = (LinearLayout)itemView.findViewById(R.id.message_ll);
         userPhotoRight =(CircleImageView)itemView.findViewById(R.id.userPhotoRight);
+        textMessage_tv = (TextView)itemView.findViewById(R.id.textMessage);
     }
 
 

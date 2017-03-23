@@ -17,6 +17,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -53,6 +55,8 @@ import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Type;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -71,6 +75,8 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
     String channel_id;
     RecyclerView recyclerView;
     ListMessageAdapter listMessageAdapter;
+    EditText textMessage_et;
+    ImageView sendText_btn;
 
 
     @Override
@@ -87,10 +93,15 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         getChannel();
-        Button createCanvas_btn = (Button)findViewById(R.id.createCanvas_btn);
-        createCanvas_btn.setOnClickListener(clickHandler);
 
+        ImageView createCanvas_btn = (ImageView)findViewById(R.id.createCanvas_btn);
         recyclerView = (RecyclerView)findViewById(R.id.messageList_rv);
+        textMessage_et = (EditText)findViewById(R.id.textMessage_et);
+        sendText_btn = (ImageView)findViewById(R.id.sendText_btn) ;
+
+        createCanvas_btn.setOnClickListener(clickHandler);
+        sendText_btn.setOnClickListener(clickHandler);
+
         linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -105,6 +116,9 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
             switch (v.getId()){
                 case R.id.createCanvas_btn:
                     showCanvas();
+                    break;
+                case R.id.sendText_btn:
+                    sendTextMessage();
                     break;
             }
         }
@@ -160,6 +174,22 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 
     }
 
+    private void sendTextMessage(){
+        HashMap<String, Object> newMessage = new HashMap<>();
+        newMessage.put("message",textMessage_et.getText().toString());
+        newMessage.put("type","text");
+        newMessage.put("time", ServerValue.TIMESTAMP);
+        newMessage.put("sender",firebaseUser.getDisplayName());
+        databaseReference.child("messages").child(channel_id).push().setValue(newMessage).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                sendNotification();
+                textMessage_et.setText("");
+            }
+        });
+
+    }
+
     private void uploadCanvas(View view, final AlertDialog alertDialog){
 
         StorageReference imageDir = storageReference.child("image");
@@ -197,7 +227,8 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
                 Uri uri = taskSnapshot.getDownloadUrl();
                 Log.d("uriDownload",uri.toString());
                 HashMap<String, Object> message = new HashMap<>();
-                message.put("canvasUri",uri.toString());
+                message.put("message",uri.toString());
+                message.put("type","image");
                 message.put("time", ServerValue.TIMESTAMP);
                 message.put("sender",firebaseUser.getDisplayName());
                 databaseReference.child("messages").child(channel_id).push().setValue(message).addOnSuccessListener(new OnSuccessListener<Void>() {

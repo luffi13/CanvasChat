@@ -60,9 +60,14 @@ public class ListMessageAdapter extends FirebaseRecyclerAdapter<Message, Message
             viewHolder.userPhotoLeft.setVisibility(View.VISIBLE);
             viewHolder.message_ll.setGravity(Gravity.LEFT);
         }
-        if(model.getCanvasUri()!=null){
-            Glide.with(activity).load(model.getCanvasUri()).into(viewHolder.imageMessage);
-        }else {
+        if(model.getMessage()!=null&&model.getType().equals("image")){
+            viewHolder.textMessage_tv.setVisibility(View.GONE);
+            viewHolder.imageMessage.setVisibility(View.VISIBLE);
+            Glide.with(activity).load(model.getMessage()).into(viewHolder.imageMessage);
+        }else if(model.getMessage()!=null&&model.getType().equals("text")){
+            viewHolder.textMessage_tv.setVisibility(View.VISIBLE);
+            viewHolder.imageMessage.setVisibility(View.GONE);
+            viewHolder.textMessage_tv.setText(model.getMessage());
 
         }
 

@@ -26,6 +26,7 @@
             <TextView
                 android:id="@+id/textMessage"
                 android:textSize="24sp"
+                android:maxWidth="300dp"
                 android:text="message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />

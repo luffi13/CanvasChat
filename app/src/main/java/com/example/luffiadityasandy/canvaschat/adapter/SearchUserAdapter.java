@@ -167,8 +167,10 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
     private void initiatePopUpWindow(final User user, View view){
         final PopupWindow popupWindow;
         LayoutInflater layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View layout = layoutInflater.inflate(R.layout.user_preview,null);
-        popupWindow = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,true);
+        View layout = layoutInflater.inflate(R.layout.user_preview,(ViewGroup)view.findViewById(R.id.preview_layout));
+        int width = view.getWidth()*6/7;
+        int height = view.getHeight()*6/7;
+        popupWindow = new PopupWindow(layout, width, height,true);
         popupWindow.showAtLocation(view, Gravity.CENTER,0,0);
 
         PreviewHolder previewHolder = new PreviewHolder(layout);

@@ -51,6 +51,7 @@ public class ListMessageAdapter extends FirebaseRecyclerAdapter<Message, Message
             viewHolder.userPhotoLeft.setVisibility(View.GONE);
             viewHolder.userPhotoRight.setVisibility(View.VISIBLE);
             viewHolder.message_ll.setGravity(Gravity.RIGHT);
+            viewHolder.textMessage_tv.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
         }
         else {
             if(photo!=null){

@@ -1,6 +1,7 @@
 package com.example.luffiadityasandy.canvaschat.activity;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.example.luffiadityasandy.canvaschat.R;
@@ -30,6 +33,7 @@ import com.example.luffiadityasandy.canvaschat.adapter.ListMessageAdapter;
 import com.example.luffiadityasandy.canvaschat.canvas_handler.DrawView;
 import com.example.luffiadityasandy.canvaschat.object.Message;
 import com.example.luffiadityasandy.canvaschat.object.User;
+import com.example.luffiadityasandy.canvaschat.view_holder.OfflineCanvasHolder;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -63,6 +67,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import yuku.ambilwarna.AmbilWarnaDialog;
 
 public class OfflineCanvasChatActvity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener{
 
@@ -77,6 +82,8 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
     ListMessageAdapter listMessageAdapter;
     EditText textMessage_et;
     ImageView sendText_btn;
+
+    DrawView canvasController;
 
 
     @Override
@@ -108,6 +115,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 
 
 
+
     }
 
     private View.OnClickListener clickHandler = new View.OnClickListener() {
@@ -115,7 +123,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         public void onClick(View v) {
             switch (v.getId()){
                 case R.id.createCanvas_btn:
-                    showCanvas();
+                    popupCanvas();
                     break;
                 case R.id.sendText_btn:
                     sendTextMessage();
@@ -124,14 +132,102 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         }
     };
 
+    private void popupCanvas(){
+        final PopupWindow popupWindow;
+        LayoutInflater layoutInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = layoutInflater.inflate(R.layout.create_canvas,(ViewGroup)findViewById(R.id.popup_canvas));
+        popupWindow = new PopupWindow(layout, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT,true);
+        popupWindow.showAtLocation(layout, Gravity.CENTER,0,0);
+
+        OfflineCanvasHolder offlineCanvasHolder = new OfflineCanvasHolder(layout);
+        canvasController = new DrawView(this);
+        canvasController.setBackgroundColor(Color.WHITE);
+
+        offlineCanvasHolder.canvas.addView(canvasController, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+        final View mView = offlineCanvasHolder.canvas;
+
+        offlineCanvasHolder.undo_btn.setOnClickListener(buttonHandler);
+        offlineCanvasHolder.redo_btn.setOnClickListener(buttonHandler);
+        offlineCanvasHolder.colorPicker_btn.setOnClickListener(colorHandler);
+
+        offlineCanvasHolder.rectangle_btn.setOnClickListener(buttonHandler);
+        offlineCanvasHolder.circle_btn.setOnClickListener(buttonHandler);
+        offlineCanvasHolder.line_btn.setOnClickListener(buttonHandler);
+        offlineCanvasHolder.freehand_btn.setOnClickListener(buttonHandler);
+
+        offlineCanvasHolder.colorPicker_btn.setOnClickListener( colorHandler);
+        offlineCanvasHolder.send_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                uploadCanvas(mView,popupWindow);
+            }
+        });
+    }
+
+    View.OnClickListener buttonHandler = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.undo_btn:
+                    canvasController.onClickUndo();
+                    break;
+                case R.id.redo_btn:
+                    canvasController.onClickRedo();
+                    break;
+                case R.id.rectangle_btn:
+                    canvasController.setPaintTool("rectangle");
+                    break;
+                case R.id.circle_btn:
+                    canvasController.setPaintTool("circle");
+                    break;
+                case R.id.freehand_btn:
+                    canvasController.setPaintTool("freehand");
+                    break;
+                case R.id.line_btn:
+                    canvasController.setPaintTool("line");
+                    break;
+            }
+        }
+    };
+
+    private View.OnClickListener colorHandler = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.colorPicker_btn:
+                    openDialog(false);
+                    break;
+            }
+        }
+    };
+
+    void openDialog(boolean supportsAlpha) {
+        AmbilWarnaDialog dialog = new AmbilWarnaDialog(OfflineCanvasChatActvity.this, Color.BLACK, supportsAlpha, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+            @Override
+            public void onOk(AmbilWarnaDialog dialog, int color) {
+                Toast.makeText(getApplicationContext(), "ok", Toast.LENGTH_SHORT).show();
+                canvasController.setPaintColor(color);
+            }
+
+            @Override
+            public void onCancel(AmbilWarnaDialog dialog) {
+                Toast.makeText(getApplicationContext(), "cancel", Toast.LENGTH_SHORT).show();
+            }
+        });
+        dialog.show();
+    }
+
     private void showCanvas(){
+
         LayoutInflater layoutInflater = LayoutInflater.from(this);
         View view = layoutInflater.inflate(R.layout.create_canvas,null);
         AlertDialog.Builder canvasDialog = new AlertDialog.Builder(this);
         canvasDialog.setView(view);
 
-        Button undo = (Button)view.findViewById(R.id.undo);
-        Button redo = (Button)view.findViewById(R.id.redo);
+        Button undo = (Button)view.findViewById(R.id.undo_btn);
+        Button redo = (Button)view.findViewById(R.id.redo_btn);
+
+
         LinearLayout canvas_ll = (LinearLayout)view.findViewById(R.id.myCanvas);
         final DrawView canvasController = new DrawView(this);
         canvasController.setBackgroundColor(Color.WHITE);
@@ -142,10 +238,10 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
             @Override
             public void onClick(View v) {
                 switch (v.getId()){
-                    case R.id.undo:
+                    case R.id.undo_btn:
                         canvasController.onClickUndo();
                         break;
-                    case R.id.redo:
+                    case R.id.redo_btn:
                         canvasController.onClickRedo();
                         break;
                 }
@@ -165,12 +261,12 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
                 });
         final AlertDialog alertDialog = canvasDialog.create();
         alertDialog.show();
-        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                uploadCanvas(mView, alertDialog);
-            }
-        });
+//        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                uploadCanvas(mView, alertDialog);
+//            }
+//        });
 
     }
 
@@ -190,7 +286,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 
     }
 
-    private void uploadCanvas(View view, final AlertDialog alertDialog){
+    private void uploadCanvas(View view, final PopupWindow popupWindow){
 
         StorageReference imageDir = storageReference.child("image");
         StorageReference imageRef = imageDir.child(firebaseUser.getUid())
@@ -199,7 +295,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 //        view.buildDrawingCache();
 //        Bitmap bitmap = view.getDrawingCache();
 
-        Bitmap b = Bitmap.createBitmap( view.getLayoutParams().width, view.getLayoutParams().height, Bitmap.Config.ARGB_8888);
+        Bitmap b = Bitmap.createBitmap( view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(b);
         view.layout(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
         view.draw(c);
@@ -240,7 +336,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 
                 progressDialog.dismiss();
                 Toast.makeText(OfflineCanvasChatActvity.this, uri.toString(), Toast.LENGTH_SHORT).show();
-                alertDialog.dismiss();
+                popupWindow.dismiss();
             }
         });
 

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.luffiadityasandy.canvaschat.R;
@@ -35,6 +36,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -50,11 +52,11 @@ public class ShareableCanvasActivity extends AppCompatActivity {
     String channel_id = "";
 
     LinearLayout canvas;
+    RelativeLayout colorPickerLayout,shapePickerLayout;
     View mView;
     ShareableCanvasView canvasController;
-    Button undo, redo, save ,
-            freehand_btn, circle_btn, rectangle_btn, line_btn, invite_btn,
-            colorPicker_btn;
+    Button save;
+    CircleImageView undo,redo,colorPicker_btn, currentColor_btn, currentShape_btn, freehand_btn, circle_btn, rectangle_btn, line_btn, invite_btn;
 
     AmbilWarnaDialog colorPickerDialog ;
 
@@ -69,30 +71,66 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         receiver = (User)getIntent().getSerializableExtra("receiver");
 
         //get button from UI
-        undo = (Button)findViewById(R.id.undo);
-        redo = (Button)findViewById(R.id.redo);
-        save = (Button)findViewById(R.id.saveCanvas) ;
-        rectangle_btn = (Button)findViewById(R.id.rectangle_btn);
-        circle_btn= (Button)findViewById(R.id.circle_btn);
-        freehand_btn = (Button)findViewById(R.id.freehand_btn);
-        line_btn = (Button)findViewById(R.id.line_btn);
-        invite_btn = (Button) findViewById(R.id.invite_btn);
+        undo = (CircleImageView) findViewById(R.id.undo_btn);
+        redo = (CircleImageView) findViewById(R.id.redo_btn);
+        //save = (Button)findViewById(R.id.saveCanvas) ;
+        rectangle_btn = (CircleImageView)findViewById(R.id.rectangle_btn);
+        circle_btn= (CircleImageView)findViewById(R.id.circle_btn);
+        freehand_btn = (CircleImageView)findViewById(R.id.freehand_btn);
+        line_btn = (CircleImageView)findViewById(R.id.line_btn);
+        //invite_btn = (Button) findViewById(R.id.invite_btn);
         canvas = (LinearLayout)findViewById(R.id.myCanvas);
 
+        currentShape_btn = (CircleImageView)findViewById(R.id.currentShape_btn);
+        currentColor_btn = (CircleImageView)findViewById(R.id.currentColor_btn);
+
+        colorPickerLayout = (RelativeLayout)findViewById(R.id.colorPicker_layout);
+        shapePickerLayout = (RelativeLayout)findViewById(R.id.shapePicker_layout);
+
+        colorPickerLayout.setVisibility(View.GONE);
+        shapePickerLayout.setVisibility(View.GONE);
+
+
         //color
-        colorPicker_btn= (Button)findViewById(R.id.colorPicker_btn);
+        colorPicker_btn= (CircleImageView)findViewById(R.id.colorPicker_btn);
+
+        currentColor_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(colorPickerLayout.getVisibility()==View.VISIBLE){
+                    colorPickerLayout.setVisibility(View.GONE);
+                }
+                else {
+                    colorPickerLayout.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        currentShape_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(shapePickerLayout.getVisibility()==View.VISIBLE){
+                    shapePickerLayout.setVisibility(View.GONE);
+                }
+                else {
+                    shapePickerLayout.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+
 
 
 
         //set listener for button click
         undo.setOnClickListener(clickHandler);
         redo.setOnClickListener(clickHandler);
-        save.setOnClickListener(clickHandler);
+        //save.setOnClickListener(clickHandler);
         rectangle_btn.setOnClickListener(clickHandler);
         circle_btn.setOnClickListener(clickHandler);
         line_btn.setOnClickListener(clickHandler);
         freehand_btn.setOnClickListener(clickHandler);
-        invite_btn.setOnClickListener(clickHandler);
+        //invite_btn.setOnClickListener(clickHandler);
 
         //set color click
         colorPicker_btn.setOnClickListener( colorHandler);
@@ -105,10 +143,10 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         @Override
         public void onClick(View view) {
             switch (view.getId()){
-                case R.id.undo:
+                case R.id.undo_btn:
                     canvasController.onClickUndo();
                     break;
-                case R.id.redo:
+                case R.id.redo_btn:
                     canvasController.onClickRedo();
                     break;
                 case R.id.saveCanvas:
@@ -127,10 +165,9 @@ public class ShareableCanvasActivity extends AppCompatActivity {
                 case R.id.line_btn:
                     canvasController.setPaintTool("line");
                     break;
-                case R.id.invite_btn:
-                    sendNotification();
-                    break;
-
+//                case R.id.invite_btn:
+//                    sendNotification();
+//                    break;
             }
         }
     };

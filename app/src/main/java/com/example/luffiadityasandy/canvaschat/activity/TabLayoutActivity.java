@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -40,6 +41,13 @@ public class TabLayoutActivity extends AppCompatActivity implements GoogleApiCli
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tab_layout);
         mUser = FirebaseAuth.getInstance().getCurrentUser();
+        if(mUser!=null){
+            Log.d("usernya",mUser.toString());
+        }
+        else {
+            startActivity(new Intent(TabLayoutActivity.this, LoginActivity.class));
+            finish();
+        }
 
         googleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this,this)

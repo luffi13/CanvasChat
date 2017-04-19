@@ -4,18 +4,25 @@ import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.io.Serializable;
 
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
 /**
  * Created by Luffi Aditya Sandy on 16/02/2017.
  */
 
 @IgnoreExtraProperties
-public class User implements Serializable {
+public class User extends RealmObject implements Serializable {
 
-    public String uid;
-    public String email;
-    public String name;
-    public String token;
-    public String state;
+    @PrimaryKey
+    private String uid;
+
+    private String email;
+    private String name;
+    private String token;
+    private String state;
+    private Boolean isEverChat;
+    private String photoUrl;
 
     public User(String uid, String email, String name, String token,String photoUrl) {
         this.uid = uid;
@@ -38,7 +45,6 @@ public class User implements Serializable {
         this.photoUrl = photoUrl;
     }
 
-    public String photoUrl;
 
     public String getUid() {
         return uid;
@@ -78,5 +84,13 @@ public class User implements Serializable {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public Boolean getIsEverChat() {
+        return isEverChat;
+    }
+
+    public void setIsEverChat(Boolean everChat) {
+        isEverChat = everChat;
     }
 }

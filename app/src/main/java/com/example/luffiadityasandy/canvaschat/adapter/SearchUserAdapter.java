@@ -129,7 +129,7 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
                     ArrayList<User> resultFilter = new ArrayList<>();
                     for (User data : allData){
                         if(data.getName().toLowerCase().contains(constraint)
-                            ||data.email.toLowerCase().contains(constraint)){
+                            ||data.getEmail().toLowerCase().contains(constraint)){
                             resultFilter.add(data);
                         }
                     }

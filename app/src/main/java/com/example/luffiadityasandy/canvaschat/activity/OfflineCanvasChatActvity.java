@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 
@@ -50,18 +52,23 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import io.realm.RealmObject;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -114,8 +121,12 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         recyclerView.setLayoutManager(linearLayoutManager);
 
 
+        //try to get last message
+        //FloatingActionButton lastMessage_btn = (FloatingActionButton)findViewById(R.id.lastMessage_btn);
+        //lastMessage_btn.setOnClickListener(clickHandler);
 
-
+        //set user state to ever chat
+        setIsEverChat();
     }
 
     private View.OnClickListener clickHandler = new View.OnClickListener() {
@@ -128,9 +139,26 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
                 case R.id.sendText_btn:
                     sendTextMessage();
                     break;
+//                case R.id.lastMessage_btn:
+//                    iterateLastMessage();
+//                    break;
             }
         }
     };
+
+    private void iterateLastMessage(){
+        ArrayList<Message> lastMessage = listMessageAdapter.getLastMessages(2);
+        for (int i = 0; i<lastMessage.size();i++){
+            Log.d("lastMessage", "iterateLastMessage: "+lastMessage.get(i).getMessage());
+        }
+    }
+
+    private void setIsEverChat(){
+        HashMap <String, Object> data = new HashMap<>();
+        data.put("isEverChat",true);
+        databaseReference.child("friendship/"+firebaseUser.getUid()+"/"+receiver.getUid()).updateChildren(data);
+        databaseReference.child("friendship/"+receiver.getUid()+"/"+firebaseUser.getUid()).updateChildren(data);
+    }
 
     private void popupCanvas(){
         final PopupWindow popupWindow;
@@ -390,7 +418,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        Log.d("ConnectionFailed",connectionResult.getErrorMessage());
     }
 
     private void setAdapter(){
@@ -420,14 +448,28 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 
         if(receiver.getToken().equals(""))
             return;
+        Log.d("sendnotif", "sendNotification: ");
 
         final ProgressDialog progressDialog = new ProgressDialog(OfflineCanvasChatActvity.this);
         progressDialog.setTitle("Sending Notification");
         progressDialog.setMessage("please wait....");
         progressDialog.show();
 
+        Gson gson = new GsonBuilder()
+                .setExclusionStrategies(new ExclusionStrategy() {
+                    @Override
+                    public boolean shouldSkipField(FieldAttributes f) {
+                        return f.getDeclaringClass().equals(RealmObject.class);
+                    }
+
+                    @Override
+                    public boolean shouldSkipClass(Class<?> clazz) {
+                        return false;
+                    }
+                })
+                .create();
+
         Retrofit retrofit = new Retrofit.Builder().baseUrl("https://fcm.googleapis.com").addConverterFactory(GsonConverterFactory.create()).build();
-        Gson gson = new Gson();
         Type type = new TypeToken<GCMRequest>() {}.getType();
         GCMRequest gcmRequest = new GCMRequest(receiver.getToken()
                 ,new User(firebaseUser.getUid(),firebaseUser.getEmail(), firebaseUser.getDisplayName(), FirebaseInstanceId.getInstance().getToken()+"",firebaseUser.getPhotoUrl().toString())

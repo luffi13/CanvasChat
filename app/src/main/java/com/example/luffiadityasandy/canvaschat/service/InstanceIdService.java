@@ -26,7 +26,7 @@ public class InstanceIdService extends com.google.firebase.iid.FirebaseInstanceI
 
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("token",token);
-        databaseReference.child("users_detail").child(firebaseUser.getUid()).updateChildren(hashMap);
+        databaseReference.child("user_detail").child(firebaseUser.getUid()).updateChildren(hashMap);
 
     }
 }

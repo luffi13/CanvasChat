@@ -3,12 +3,14 @@ package com.example.luffiadityasandy.canvaschat.object;
 import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.database.ServerValue;
 
+import io.realm.RealmObject;
+
 /**
  * Created by Luffi Aditya Sandy on 15/02/2017.
  */
 
 @IgnoreExtraProperties
-public class Message {
+public class Message extends RealmObject {
     private String sender;
     private String message;
     private Long time;

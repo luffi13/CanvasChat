@@ -11,11 +11,15 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 
+import java.util.ArrayList;
+
 /**
  * Created by Luffi Aditya Sandy on 17/02/2017.
  */
 
 public class ListMessageAdapter extends FirebaseRecyclerAdapter<Message, MessageHolder> {
+
+
 
     private String userPhoto;
     private Activity activity;
@@ -38,6 +42,30 @@ public class ListMessageAdapter extends FirebaseRecyclerAdapter<Message, Message
     public void setUserPhoto(String userPhoto) {
         this.userPhoto = userPhoto;
     }
+
+    @Override
+    public int getItemCount() {
+        return super.getItemCount();
+    }
+
+    @Override
+    public Message getItem(int position) {
+        return super.getItem(position);
+    }
+
+    public ArrayList<Message> getLastMessages(int count){
+        int limit = 0;
+        if (count<getItemCount()){
+            limit = getItemCount()-count;
+        }
+
+        ArrayList<Message> listLastMessages = new ArrayList<>();
+        for (int i = getItemCount()-1;i>=limit;i-- ){
+            listLastMessages.add(getItem(i));
+        }
+        return listLastMessages;
+    }
+
 
 
     @Override

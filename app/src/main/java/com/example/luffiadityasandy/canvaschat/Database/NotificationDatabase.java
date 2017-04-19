@@ -17,7 +17,7 @@ public class NotificationDatabase extends SQLiteOpenHelper  {
 
     private static final String TAG = "notification database";
 
-    private static final String DB_NAME = "notification.db";
+    private static final String DB_NAME = "canvas.db";
     private static final String table_name = "notification";
     private static final String column_id = "uid";
     private static final String column_notification = "amount";

@@ -3,6 +3,7 @@ package com.example.luffiadityasandy.canvaschat.activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -56,8 +57,9 @@ public class ShareableCanvasActivity extends AppCompatActivity {
     View mView;
     ShareableCanvasView canvasController;
     Button save;
-    CircleImageView undo,redo,colorPicker_btn, currentColor_btn, currentShape_btn, freehand_btn, circle_btn, rectangle_btn, line_btn, invite_btn;
-
+    FloatingActionButton freehand_btn, circle_btn, rectangle_btn, line_btn;
+    CircleImageView undo,redo, invite_btn,colorPicker_btn;
+//    CircleImageView currentColor_btn, currentShape_btn;
     AmbilWarnaDialog colorPickerDialog ;
 
     @Override
@@ -74,52 +76,27 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         undo = (CircleImageView) findViewById(R.id.undo_btn);
         redo = (CircleImageView) findViewById(R.id.redo_btn);
         //save = (Button)findViewById(R.id.saveCanvas) ;
-        rectangle_btn = (CircleImageView)findViewById(R.id.rectangle_btn);
-        circle_btn= (CircleImageView)findViewById(R.id.circle_btn);
-        freehand_btn = (CircleImageView)findViewById(R.id.freehand_btn);
-        line_btn = (CircleImageView)findViewById(R.id.line_btn);
+        rectangle_btn = (FloatingActionButton) findViewById(R.id.rectangle_btn);
+        circle_btn= (FloatingActionButton)findViewById(R.id.circle_btn);
+        freehand_btn = (FloatingActionButton)findViewById(R.id.freehand_btn);
+        line_btn = (FloatingActionButton)findViewById(R.id.line_btn);
         //invite_btn = (Button) findViewById(R.id.invite_btn);
         canvas = (LinearLayout)findViewById(R.id.myCanvas);
 
-        currentShape_btn = (CircleImageView)findViewById(R.id.currentShape_btn);
-        currentColor_btn = (CircleImageView)findViewById(R.id.currentColor_btn);
+        Log.d("sizee", "onCreate: "+canvas.getHeight()+" "+canvas.getWidth());
 
-        colorPickerLayout = (RelativeLayout)findViewById(R.id.colorPicker_layout);
-        shapePickerLayout = (RelativeLayout)findViewById(R.id.shapePicker_layout);
+        //currentShape_btn = (CircleImageView)findViewById(R.id.currentShape_btn);
+        //currentColor_btn = (CircleImageView)findViewById(R.id.currentColor_btn);
 
-        colorPickerLayout.setVisibility(View.GONE);
-        shapePickerLayout.setVisibility(View.GONE);
+//        colorPickerLayout = (RelativeLayout)findViewById(R.id.colorPicker_layout);
+//        shapePickerLayout = (RelativeLayout)findViewById(R.id.shapePicker_layout);
+//
+//        colorPickerLayout.setVisibility(View.GONE);
+//        shapePickerLayout.setVisibility(View.GONE);
 
 
         //color
         colorPicker_btn= (CircleImageView)findViewById(R.id.colorPicker_btn);
-
-        currentColor_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(colorPickerLayout.getVisibility()==View.VISIBLE){
-                    colorPickerLayout.setVisibility(View.GONE);
-                }
-                else {
-                    colorPickerLayout.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-
-        currentShape_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(shapePickerLayout.getVisibility()==View.VISIBLE){
-                    shapePickerLayout.setVisibility(View.GONE);
-                }
-                else {
-                    shapePickerLayout.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-
-
-
 
 
         //set listener for button click
@@ -268,10 +245,12 @@ public class ShareableCanvasActivity extends AppCompatActivity {
     public void prepareCanvasView(){
         canvasController = new ShareableCanvasView(this,channel_id);
         canvasController.setBackgroundColor(Color.WHITE);
-        canvas.addView(canvasController,canvas.getWidth(),canvas.getHeight());
+        Log.d("size canvas1", canvas.getWidth()+" "+canvas.getHeight());
+        int height = canvas.getWidth();
+        canvas.addView(canvasController,canvas.getWidth(),height);
         Log.d("size canvas", canvas.getWidth()+" "+canvas.getHeight());
         mView = canvas;
-        setMyCanvasSize(canvas.getWidth(),canvas.getHeight());
+        setMyCanvasSize(canvas.getWidth(),canvas.getWidth());
 //        getReceiverCanvas();
     }
 
@@ -282,7 +261,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         myScreenSize.put("width",width);
         myScreenSize.put("height",height);
         canvasController.setMyScrenSize(myScreenSize);
-        databaseReference.child("shareable_canvas/"+channel_id+"/screensize/"+firebaseUser.getUid()).setValue(myScreenSize);
+        //databaseReference.child("shareable_canvas/"+channel_id+"/screensize/"+firebaseUser.getUid()).setValue(myScreenSize);
     }
 
     //get receiver screen size

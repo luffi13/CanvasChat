@@ -135,7 +135,7 @@ public class SignatureActivity extends AppCompatActivity {
                     break;
                 case R.id.saveCanvas:
                     //Toast.makeText(SignatureActivity.this, "saved", Toast.LENGTH_SHORT).show();
-                    uploadDataByte(mView);
+                    saveCanvas(mView);
                     break;
                 case R.id.rectangle_btn:
                     canvasController.setPaintTool("rectangle");

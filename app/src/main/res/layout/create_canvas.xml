@@ -21,8 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
-        android:padding="16dp"
-        android:background="@mipmap/shape_picker_layout"
+        android:padding="8dp"
         >
 
 
@@ -41,8 +40,8 @@
                     android:padding="3dp"
                     app:border_width="1dp"
                     android:src="@mipmap/rectangle"
-                    android:layout_height="32dp"
-                    android:layout_width="32dp"
+                    android:layout_height="@dimen/color_button_size"
+                    android:layout_width="@dimen/color_button_size"
                     />
 
 
@@ -59,8 +58,8 @@
                     android:padding="3dp"
                     app:border_width="1dp"
                     android:src="@mipmap/circle"
-                    android:layout_height="32dp"
-                    android:layout_width="32dp"
+                    android:layout_height="@dimen/color_button_size"
+                    android:layout_width="@dimen/color_button_size"
                     />
             </TableRow>
 
@@ -75,8 +74,8 @@
                     android:padding="3dp"
                     app:border_width="1dp"
                     android:src="@mipmap/line"
-                    android:layout_height="32dp"
-                    android:layout_width="32dp"
+                    android:layout_height="@dimen/color_button_size"
+                    android:layout_width="@dimen/color_button_size"
                     />
 
 
@@ -93,8 +92,8 @@
                     android:padding="3dp"
                     app:border_width="1dp"
                     android:src="@mipmap/freehand"
-                    android:layout_height="32dp"
-                    android:layout_width="32dp"
+                    android:layout_height="@dimen/color_button_size"
+                    android:layout_width="@dimen/color_button_size"
                     />
 
 
@@ -107,11 +106,10 @@
     <RelativeLayout
         android:id="@+id/colorPicker_layout"
         android:layout_width="wrap_content"
-        android:background="@mipmap/color_picker_layout"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        android:padding="16dp"
+        android:padding="8dp"
         >
 
         <TableLayout
@@ -126,9 +124,9 @@
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/colorPicker_btn"
                     android:layout_column="4"
-                    android:minHeight="32dp"
                     android:src="@android:color/holo_blue_dark"
-                    android:minWidth="32dp"
+                    android:minHeight="@dimen/color_button_size"
+                    android:minWidth="@dimen/color_button_size"
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
                     />
@@ -141,8 +139,8 @@
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/yellowButton"
                     android:layout_column="3"
-                    android:minHeight="32dp"
-                    android:minWidth="32dp"
+                    android:minHeight="@dimen/color_button_size"
+                    android:minWidth="@dimen/color_button_size"
                     android:src="#ffff02"
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
@@ -155,8 +153,8 @@
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/redButton"
                     android:layout_column="2"
-                    android:minHeight="32dp"
-                    android:minWidth="32dp"
+                    android:minHeight="@dimen/color_button_size"
+                    android:minWidth="@dimen/color_button_size"
                     android:src="@android:color/holo_red_dark"
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
@@ -170,8 +168,8 @@
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/blackButton"
                     android:layout_column="1"
-                    android:minHeight="32dp"
-                    android:minWidth="32dp"
+                    android:minHeight="@dimen/color_button_size"
+                    android:minWidth="@dimen/color_button_size"
                     android:src="@android:color/black"
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
@@ -187,7 +185,7 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/undo_btn"
-        android:layout_margin="16dp"
+        android:layout_margin="8dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:minHeight="48dp"
@@ -200,7 +198,7 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/redo_btn"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:layout_toRightOf="@+id/undo_btn"
         android:layout_alignParentBottom="true"
         android:minHeight="48dp"
@@ -213,8 +211,8 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/send_btn"
-        android:layout_marginBottom="16dp"
-        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
         android:layout_toRightOf="@+id/redo_btn"
         android:layout_alignParentBottom="true"
         android:minHeight="48dp"
@@ -227,7 +225,7 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/currentColor_btn"
-        android:layout_margin="16dp"
+        android:layout_margin="8dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
         android:minHeight="48dp"

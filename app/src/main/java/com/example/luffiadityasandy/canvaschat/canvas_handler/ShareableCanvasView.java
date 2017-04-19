@@ -401,6 +401,7 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         item.setCanvasSize(myScrenSize.get("width"),myScrenSize.get("height"));
         item.setPath();
         paths.add(item);
+        myPath.add(item);
         invalidate();
         setPaintProperties();
         generatePushKey();
@@ -419,6 +420,7 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         item.setCanvasSize(myScrenSize.get("width"),myScrenSize.get("height"));
         item.setPath();
         paths.add(item);
+        myPath.add(item);
         invalidate();
         setPaintProperties();
         generatePushKey();
@@ -436,6 +438,7 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
         item.setCanvasSize(myScrenSize.get("width"),myScrenSize.get("height"));
         item.setPath();
         paths.add(item);
+        myPath.add(item);
         invalidate();
         setPaintProperties();
         generatePushKey();

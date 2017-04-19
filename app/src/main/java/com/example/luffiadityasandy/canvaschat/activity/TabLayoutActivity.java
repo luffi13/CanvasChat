@@ -135,8 +135,6 @@ public class TabLayoutActivity extends AppCompatActivity implements GoogleApiCli
                     return ListFriendFragment.newInstance(mUser.getUid());
                 case 1:
                     return ListChatFragment.newInstance(mUser.getUid());
-                case 2:
-                    return ListChatFragment.newInstance(mUser.getUid());
             }
             return null;
         }
@@ -144,7 +142,7 @@ public class TabLayoutActivity extends AppCompatActivity implements GoogleApiCli
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return 3;
+            return 2;
         }
 
         @Override
@@ -154,8 +152,6 @@ public class TabLayoutActivity extends AppCompatActivity implements GoogleApiCli
                     return "FRIEND";
                 case 1:
                     return "CHAT";
-                case 2:
-                    return "SEARCH";
             }
             return null;
         }

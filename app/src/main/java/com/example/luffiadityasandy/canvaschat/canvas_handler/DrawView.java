@@ -84,6 +84,8 @@ public class DrawView  extends View implements View.OnTouchListener {
     }
 
 
+
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -138,6 +140,7 @@ public class DrawView  extends View implements View.OnTouchListener {
         mCanvas.drawPath(mPath, mPaint);
         // kill this so we don't double draw
         paths.add(Pair.create(mPath,newPaint));
+        setPaintProperties();
         mPath = new Path();
     }
 

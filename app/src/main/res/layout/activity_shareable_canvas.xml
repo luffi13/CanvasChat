@@ -7,234 +7,173 @@
     android:layout_height="match_parent"
     tools:context="com.example.luffiadityasandy.canvaschat.activity.ShareableCanvasActivity">
 
-
     <LinearLayout
-        android:id="@+id/myCanvas"
-        android:layout_below="@+id/judul"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerHorizontal="true"
-        android:orientation="horizontal"/>
-    <RelativeLayout
-        android:id="@+id/shapePicker_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:padding="16dp"
-        android:background="@mipmap/shape_picker_layout"
+        android:layout_above="@+id/myCanvas"
+        android:orientation="horizontal"
+        android:padding="12dp"
         >
 
 
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            >
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/line_btn"
+                app:borderWidth="0dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:backgroundTint="@android:color/white"
+                android:src="@mipmap/line"/>
+        </LinearLayout>
 
-        <TableLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <TableRow
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                >
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/rectangle_btn"
-                    android:layout_column="1"
-                    app:border_color="@android:color/black"
-                    android:padding="3dp"
-                    app:border_width="1dp"
-                    android:src="@mipmap/rectangle"
-                    android:layout_height="32dp"
-                    android:layout_width="32dp"
-                    />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            >
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/rectangle_btn"
+                app:borderWidth="0dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:backgroundTint="@android:color/white"
+                android:src="@mipmap/rectangle"/>
+        </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            >
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/circle_btn"
+                app:borderWidth="0dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:backgroundTint="@android:color/white"
+                android:src="@mipmap/circle"/>
+        </LinearLayout>
 
-            </TableRow>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            >
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/freehand_btn"
+                app:borderWidth="0dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:backgroundTint="@android:color/white"
+                android:src="@mipmap/freehand"/>
+        </LinearLayout>
 
-            <TableRow
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                >
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/circle_btn"
-                    android:layout_column="2"
-                    app:border_color="@android:color/black"
-                    android:padding="3dp"
-                    app:border_width="1dp"
-                    android:src="@mipmap/circle"
-                    android:layout_height="32dp"
-                    android:layout_width="32dp"
-                    />
-            </TableRow>
-
-            <TableRow
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                >
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/line_btn"
-                    android:layout_column="3"
-                    app:border_color="@android:color/black"
-                    android:padding="3dp"
-                    app:border_width="1dp"
-                    android:src="@mipmap/line"
-                    android:layout_height="32dp"
-                    android:layout_width="32dp"
-                    />
-
-
-            </TableRow>
-
-            <TableRow
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                >
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/freehand_btn"
-                    android:layout_column="4"
-                    app:border_color="@android:color/black"
-                    android:padding="3dp"
-                    app:border_width="1dp"
-                    android:src="@mipmap/freehand"
-                    android:layout_height="32dp"
-                    android:layout_width="32dp"
-                    />
-
-
-            </TableRow>
-        </TableLayout>
-
-    </RelativeLayout>
-
-
-    <RelativeLayout
-        android:id="@+id/colorPicker_layout"
-        android:layout_width="wrap_content"
-        android:background="@mipmap/color_picker_layout"
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/myCanvas"
+        android:layout_width="match_parent"
+        android:minHeight="350dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:orientation="horizontal"
+        android:background="@android:color/white"/>
+
+
+    <LinearLayout
+        android:padding="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_alignParentBottom="true"
-        android:padding="16dp"
         >
 
-        <TableLayout
-            android:id="@+id/basicColor_tl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/undo_btn"
+            app:border_width="3dp"
+            android:padding="6dp"
+            app:border_color="@android:color/black"
+            android:src="@mipmap/undo"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"/>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/redo_btn"
+            app:border_width="3dp"
+            android:padding="6dp"
+            app:border_color="@android:color/black"
+            android:src="@mipmap/redo"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"/>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/blackButton"
+            app:border_width="3dp"
+            app:border_color="@android:color/black"
+            android:layout_width="0dp"
+            android:src="@android:color/black"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_margin="3dp"/>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/redButton"
+            app:border_width="3dp"
+            app:border_color="@android:color/holo_red_dark"
+            android:layout_width="0dp"
+            android:src="@android:color/holo_red_dark"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_margin="3dp"/>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/yellowButton"
+            app:border_width="3dp"
+            app:border_color="#ffff02"
+            android:layout_width="0dp"
+            android:src="#ffff02"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_margin="3dp"/>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/colorPicker_btn"
+            android:layout_width="0dp"
+            android:src="@android:color/holo_blue_bright"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_margin="3dp"/>
+
+    </LinearLayout>
 
 
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/colorPicker_btn"
-                    android:layout_column="4"
-                    android:minHeight="32dp"
-                    android:src="@android:color/holo_blue_dark"
-                    android:minWidth="32dp"
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    />
-
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/yellowButton"
-                    android:layout_column="3"
-                    android:minHeight="32dp"
-                    android:minWidth="32dp"
-                    android:src="#ffff02"
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    />
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/redButton"
-                    android:layout_column="2"
-                    android:minHeight="32dp"
-                    android:minWidth="32dp"
-                    android:src="@android:color/holo_red_dark"
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    />
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/blackButton"
-                    android:layout_column="1"
-                    android:minHeight="32dp"
-                    android:minWidth="32dp"
-                    android:src="@android:color/black"
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    />
 
 
-            </TableRow>
-        </TableLayout>
-
-
-    </RelativeLayout>
-
-
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/undo_btn"
-        android:layout_margin="16dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        app:border_width="3dp"
-        app:border_color="@android:color/black"
-        android:src="@mipmap/undo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/redo_btn"
-        android:layout_marginBottom="16dp"
-        android:layout_toRightOf="@+id/undo_btn"
-        android:layout_alignParentBottom="true"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        android:src="@mipmap/redo"
-        app:border_width="3dp"
-        app:border_color="@android:color/black"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/currentColor_btn"
-        android:layout_margin="16dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        android:src="@android:color/black"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/currentShape_btn"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        app:border_width="3dp"
-        app:border_color="@android:color/black"
-        android:src="@mipmap/shapes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignLeft="@+id/currentColor_btn"
-        android:layout_alignStart="@+id/currentColor_btn" />
+    <!--<de.hdodenhof.circleimageview.CircleImageView-->
+        <!--android:id="@+id/currentShape_btn"-->
+        <!--android:minHeight="48dp"-->
+        <!--android:minWidth="48dp"-->
+        <!--app:border_width="3dp"-->
+        <!--app:border_color="@android:color/black"-->
+        <!--android:src="@mipmap/shapes"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="18dp"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:layout_alignLeft="@+id/currentColor_btn"-->
+        <!--android:layout_alignStart="@+id/currentColor_btn" />-->
 
 
 </RelativeLayout>

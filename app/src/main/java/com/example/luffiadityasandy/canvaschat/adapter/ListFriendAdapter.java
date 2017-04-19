@@ -31,6 +31,8 @@ import com.google.firebase.database.Query;
 
 import java.util.HashMap;
 
+import io.realm.RealmResults;
+
 /**
  * Created by Luffi Aditya Sandy on 16/02/2017.
  */
@@ -39,17 +41,21 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
     private Activity activity;
     DatabaseReference databaseReference;
     FirebaseUser firebaseUser;
+    private RealmResults<User> offlineFriendData;
+    private boolean isConnected;
 
     public ListFriendAdapter(Class<User> modelClass, int modelLayout, Class<FriendViewHolder> viewHolderClass, DatabaseReference ref) {
         super(modelClass, modelLayout, viewHolderClass, ref);
         databaseReference = FirebaseDatabase.getInstance().getReference();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        isConnected = true;
     }
 
     public ListFriendAdapter(Class<User> modelClass, int modelLayout, Class<FriendViewHolder> viewHolderClass, Query ref) {
         super(modelClass, modelLayout, viewHolderClass, ref);
         databaseReference = FirebaseDatabase.getInstance().getReference();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        isConnected = true;
     }
 
     @Override
@@ -84,9 +90,15 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
             }
         });
 
+    }
 
 
+    public void setConnected(boolean connected) {
+        isConnected = connected;
+    }
 
+    public void setOfflineFriendData(RealmResults<User> offlineFriendData) {
+        this.offlineFriendData = offlineFriendData;
     }
 
     private void initiatePopUpWindow(final User user, View view){
@@ -154,6 +166,23 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
         User user = super.parseSnapshot(snapshot);
         return user;
     }
+
+    @Override
+    public User getItem(int position) {
+        if(!isConnected){
+            return offlineFriendData.get(position);
+        }
+        return super.getItem(position);
+    }
+
+    @Override
+    public int getItemCount() {
+        if(!isConnected){
+            return offlineFriendData.size();
+        }
+        return super.getItemCount();
+    }
+
 
     public Activity getActivity() {
         return activity;

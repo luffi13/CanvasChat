@@ -14,17 +14,27 @@
         android:id="@+id/titleLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Sign in"
+        android:text="Canvas Chat"
         android:textSize="30sp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:textAlignment="center"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/logoImage"
+        android:layout_below="@+id/titleLogin"
+        android:src="@android:color/holo_red_dark"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/signInButton"/>
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/signInButton"
-        android:layout_marginBottom="40dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="20dp"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
     </com.google.android.gms.common.SignInButton>

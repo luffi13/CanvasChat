@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.net.Uri;
@@ -17,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -36,6 +38,8 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -53,6 +57,7 @@ public class SignatureActivity extends AppCompatActivity {
     View mView;
     Button undo, redo, save , freehand_btn, circle_btn, rectangle_btn;
     StorageReference storageReference;
+    File mediaStorageDir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +65,9 @@ public class SignatureActivity extends AppCompatActivity {
         setContentView(R.layout.activity_signature);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setTitle("Draw SignatureActivity");
+
+        mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+                + "/Android/data/com.luffi.canvaschat");
 
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -109,6 +117,7 @@ public class SignatureActivity extends AppCompatActivity {
         //storage to upload bitmap
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReferenceFromUrl("gs://canvaschat-e41e4.appspot.com");
+        deleteImage();
 
     }
 
@@ -158,19 +167,60 @@ public class SignatureActivity extends AppCompatActivity {
         v.draw(c);
 
         // path to /Android/data
-        File directory = getOutputMediaFile();
+        File directory = getOutputMediaFile("luffi");
         Log.d("imagedir",directory.toString());
-        FileOutputStream fos = null;
+        FileOutputStream fos;
         try {
             fos = new FileOutputStream(directory);
             // Use the compress method on the BitMap object to write image to the OutputStream
             b.compress(Bitmap.CompressFormat.PNG, 100, fos);
             fos.close();
+            readImage();
         } catch (Exception e) {
             e.printStackTrace();
 
         }
 
+    }
+
+    private  File getOutputMediaFile(String imageName){
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+
+
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+                return null;
+            }
+        }
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmm").format(new Date());
+        String mImageName=imageName+".jpg";
+
+        File mediaFile;
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
+        return mediaFile;
+    }
+
+    private void readImage(){
+        try {
+            File f=new File(mediaStorageDir.getPath(), "luffi.jpg");
+            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
+            ImageView img=(ImageView)findViewById(R.id.internalImage);
+            img.setImageBitmap(b);
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void deleteImage() {
+        File file = new File(mediaStorageDir.getPath(), "luffi.jpg");
+        if(file.delete()){
+            Toast.makeText(this, "success delete", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void uploadDataByte(View view){
@@ -211,29 +261,6 @@ public class SignatureActivity extends AppCompatActivity {
                 Toast.makeText(SignatureActivity.this, uri.toString(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private  File getOutputMediaFile(){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-        File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
-                + "/Android/data/");
-
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                return null;
-            }
-        }
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmm").format(new Date());
-        File mediaFile;
-        String mImageName="MI_"+ timeStamp +".jpg";
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
-        return mediaFile;
     }
 
     private static void verifyLocationPermissions(Activity activity) {

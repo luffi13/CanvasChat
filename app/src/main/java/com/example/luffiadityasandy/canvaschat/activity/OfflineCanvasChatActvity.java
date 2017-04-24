@@ -147,9 +147,10 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
     };
 
     private void iterateLastMessage(){
-        ArrayList<Message> lastMessage = listMessageAdapter.getLastMessages(2);
+        ArrayList<Message> lastMessage = listMessageAdapter.getLastMessages(5);
         for (int i = 0; i<lastMessage.size();i++){
             Log.d("lastMessage", "iterateLastMessage: "+lastMessage.get(i).getMessage());
+
         }
     }
 
@@ -318,7 +319,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 
         StorageReference imageDir = storageReference.child("image");
         StorageReference imageRef = imageDir.child(firebaseUser.getUid())
-                .child(+Calendar.getInstance().get(Calendar.MILLISECOND)+".jpg");
+                .child(+Calendar.getInstance().getTimeInMillis()+".jpg");
 //        view.setDrawingCacheEnabled(true);
 //        view.buildDrawingCache();
 //        Bitmap bitmap = view.getDrawingCache();

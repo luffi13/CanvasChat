@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.luffiadityasandy.canvaschat.R;
+import com.example.luffiadityasandy.canvaschat.fragment.ListChatFragment;
 import com.example.luffiadityasandy.canvaschat.view_holder.FriendViewHolder;
 import com.example.luffiadityasandy.canvaschat.activity.OfflineCanvasChatActvity;
 import com.example.luffiadityasandy.canvaschat.activity.ShareableCanvasActivity;
@@ -39,10 +42,12 @@ import io.realm.RealmResults;
 
 public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHolder> {
     private Activity activity;
-    DatabaseReference databaseReference;
-    FirebaseUser firebaseUser;
+    private DatabaseReference databaseReference;
+    private FirebaseUser firebaseUser;
     private RealmResults<User> offlineFriendData;
     private boolean isConnected;
+    private RecyclerView recyclerView;
+    private String fragmentName;
 
     public ListFriendAdapter(Class<User> modelClass, int modelLayout, Class<FriendViewHolder> viewHolderClass, DatabaseReference ref) {
         super(modelClass, modelLayout, viewHolderClass, ref);
@@ -51,11 +56,12 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
         isConnected = true;
     }
 
-    public ListFriendAdapter(Class<User> modelClass, int modelLayout, Class<FriendViewHolder> viewHolderClass, Query ref) {
+    public ListFriendAdapter(Class<User> modelClass, int modelLayout, Class<FriendViewHolder> viewHolderClass, Query ref, String fragmentName) {
         super(modelClass, modelLayout, viewHolderClass, ref);
         databaseReference = FirebaseDatabase.getInstance().getReference();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         isConnected = true;
+        this.fragmentName = fragmentName;
     }
 
     @Override
@@ -70,23 +76,14 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
         else {
             Glide.with(activity).load(model.getPhotoUrl()).into(viewHolder.userPhoto);
         }
-        viewHolder.userPhoto.setOnClickListener(new View.OnClickListener() {
+        viewHolder.itemLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                initiatePopUpWindow(model,v);
-            }
-        });
-
-        viewHolder.displayName.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goPrivateChat(model);
-            }
-        });
-        viewHolder.email.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goShareableChat(model);
+                if(fragmentName.equals("chat")){
+                    goPrivateChat(model);
+                }else{
+                    initiatePopUpWindow(model,v);
+                }
             }
         });
 
@@ -105,12 +102,24 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
         final PopupWindow popupWindow;
         LayoutInflater layoutInflater = (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = layoutInflater.inflate(R.layout.user_preview,null);
-        popupWindow = new PopupWindow(layout, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,true);
+        int width = recyclerView.getWidth()*6/7;
+        int height = recyclerView.getHeight()*5/7;
+        Log.d("friendAdapter", "initiatePopUpWindow: "+width+" "+height);
+        popupWindow = new PopupWindow(layout, width, ViewGroup.LayoutParams.WRAP_CONTENT,true);
         popupWindow.showAtLocation(view, Gravity.CENTER,0,0);
 
         PreviewHolder previewHolder = new PreviewHolder(layout);
         previewHolder.name_tv.setText(user.getName());
         previewHolder.email_tv.setText(user.getEmail());
+        previewHolder.chatLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                goPrivateChat(user);
+                popupWindow.dismiss();
+            }
+        });
+
         if (user.getPhotoUrl()==null){
             previewHolder.userPhoto.setImageDrawable(ContextCompat.getDrawable(activity, R.drawable.ic_account_circle));
         }
@@ -118,10 +127,10 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
             Glide.with(activity).load(user.getPhotoUrl()+"?sz=300").into(previewHolder.userPhoto);
         }
         if (user.getState().equals("friend")){
-            previewHolder.addButton.setVisibility(View.GONE);
+            previewHolder.addLayout.setVisibility(View.GONE);
         }
         else {
-            previewHolder.addButton.setOnClickListener(new View.OnClickListener() {
+            previewHolder.addLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     addFriend(user);
@@ -151,7 +160,9 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
 
     private void goPrivateChat(User user){
         Intent privateChatIntent = new Intent(activity, OfflineCanvasChatActvity.class);
-        privateChatIntent.putExtra("receiver",user);
+        User tempUser = new User(user.getUid(),user.getEmail(),user.getName(),user.getToken(),user.getPhotoUrl());
+        privateChatIntent.putExtra("receiver",tempUser);
+        Log.d("friendadapter", "go private: friend uid"+user.getUid());
         activity.startActivity(privateChatIntent);
     }
 
@@ -170,6 +181,7 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
     @Override
     public User getItem(int position) {
         if(!isConnected){
+            Log.d("check uid from realm", "getItem: "+offlineFriendData.get(position).getUid());
             return offlineFriendData.get(position);
         }
         return super.getItem(position);
@@ -183,6 +195,11 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
         return super.getItemCount();
     }
 
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        this.recyclerView = recyclerView;
+        super.onAttachedToRecyclerView(recyclerView);
+    }
 
     public Activity getActivity() {
         return activity;
@@ -191,4 +208,6 @@ public class ListFriendAdapter extends FirebaseRecyclerAdapter<User,FriendViewHo
     public void setActivity(Activity activity) {
         this.activity = activity;
     }
+
+
 }

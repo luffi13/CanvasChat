@@ -51,11 +51,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         mFirebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = mFirebaseAuth.getCurrentUser();
 
-        if(firebaseUser!=null){
-            //go to main activity
-            startActivity(new Intent(this,MainActivity.class));
-            finish();
-        }
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
@@ -122,11 +117,10 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 Log.d("credential ", "credential complete"+task.isSuccessful());
                 if(!task.isSuccessful()){
                     Log.d("credential failed",task.getException()+"");
-                    Toast.makeText(LoginActivity.this, "Authentication Failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "connection problem", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     insertNewUser();
-                    Toast.makeText(LoginActivity.this, "succes login", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(LoginActivity.this,TabLayoutActivity.class));
                     finish();
                 }

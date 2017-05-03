@@ -28,6 +28,7 @@ import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.example.luffiadityasandy.canvaschat.R;
+import com.example.luffiadityasandy.canvaschat.object.FriendMessage;
 import com.example.luffiadityasandy.canvaschat.object.GCMRequest;
 import com.example.luffiadityasandy.canvaschat.service.ServiceMessaging;
 import com.example.luffiadityasandy.canvaschat.view_holder.MessageHolder;
@@ -68,6 +69,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import io.realm.Realm;
+import io.realm.RealmList;
 import io.realm.RealmObject;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -78,12 +81,17 @@ import yuku.ambilwarna.AmbilWarnaDialog;
 
 public class OfflineCanvasChatActvity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener{
 
+    private static final String TAG = "OfflineCanvasActivity";
     private User receiver;
     private DatabaseReference databaseReference;
     private FirebaseUser firebaseUser;
     private FirebaseStorage firebaseStorage;
     private StorageReference storageReference;
     private LinearLayoutManager linearLayoutManager;
+    private boolean isEverConnected;
+    private Realm realm;
+    private DatabaseReference connectedRef;
+
     String channel_id;
     RecyclerView recyclerView;
     ListMessageAdapter listMessageAdapter;
@@ -92,6 +100,8 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 
     DrawView canvasController;
 
+    int lastColor = Color.BLACK;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +109,10 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         setContentView(R.layout.activity_offline_canvas_chat_actvity);
 
         receiver = (User)getIntent().getSerializableExtra("receiver");
+        realm = Realm.getInstance(this);
+        channel_id = "tempChannel";
+
+        Log.d(TAG, "onCreate: userid on offline canvas "+receiver.getUid());
         //Toast.makeText(this, receiver.getName()+"\n"+receiver.getEmail()+"\n"+receiver.getUid()+"\n"+receiver.getToken()+"\n", Toast.LENGTH_SHORT).show();
 
         databaseReference = FirebaseDatabase.getInstance().getReference();
@@ -106,7 +120,6 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         storageReference = firebaseStorage.getReference();
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        getChannel();
 
         ImageView createCanvas_btn = (ImageView)findViewById(R.id.createCanvas_btn);
         recyclerView = (RecyclerView)findViewById(R.id.messageList_rv);
@@ -120,14 +133,41 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
 
+        //set user state to ever chat by connection detector
+        setAdapter();
+        isEverConnected = false;
+        connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
+        connectedRef.addValueEventListener(connectionListener);
 
-        //try to get last message
-        //FloatingActionButton lastMessage_btn = (FloatingActionButton)findViewById(R.id.lastMessage_btn);
-        //lastMessage_btn.setOnClickListener(clickHandler);
 
-        //set user state to ever chat
-        setIsEverChat();
     }
+
+
+    private ValueEventListener connectionListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot snapshot) {
+            boolean connected = snapshot.getValue(Boolean.class);
+            if (connected) {
+                System.out.println("connected to firebase");
+                isEverConnected = true;
+                setIsEverChat();
+                databaseReference.child("channels/"+firebaseUser.getUid()).addListenerForSingleValueEvent(channelListener);
+                listMessageAdapter.setConnected(true);
+                connectedRef.removeEventListener(this);
+
+            } else if(!isEverConnected) {
+                System.out.println("never connected to firebase");
+                //refer adapter to offline adapter
+                listMessageAdapter.setOfflineMessageData(getMyLastMessage());
+                listMessageAdapter.setConnected(false);
+            }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError error) {
+            System.err.println("Listener was cancelled");
+        }
+    };
 
     private View.OnClickListener clickHandler = new View.OnClickListener() {
         @Override
@@ -146,14 +186,32 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         }
     };
 
-    private void iterateLastMessage(){
-        ArrayList<Message> lastMessage = listMessageAdapter.getLastMessages(5);
-        for (int i = 0; i<lastMessage.size();i++){
-            Log.d("lastMessage", "iterateLastMessage: "+lastMessage.get(i).getMessage());
-
+    @Override
+    protected void onStop() {
+        if(isEverConnected){
+            addFriendMessage();
         }
+        super.onStop();
     }
 
+
+    public void addFriendMessage(){
+        realm.beginTransaction();
+        FriendMessage myLastMessage = new FriendMessage();
+        myLastMessage.setUid(receiver.getUid());
+
+        RealmList<Message> messages = listMessageAdapter.getLastMessages(10);
+        myLastMessage.setRealmList(messages);
+
+        realm.copyToRealmOrUpdate(myLastMessage);
+        realm.commitTransaction();
+
+    }
+
+    public RealmList<Message> getMyLastMessage(){
+        FriendMessage results = realm.where(FriendMessage.class).equalTo("uid",receiver.getUid()).findFirst();
+        return results.getRealmList();
+    }
     private void setIsEverChat(){
         HashMap <String, Object> data = new HashMap<>();
         data.put("isEverChat",true);
@@ -161,6 +219,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         databaseReference.child("friendship/"+receiver.getUid()+"/"+firebaseUser.getUid()).updateChildren(data);
     }
 
+    OfflineCanvasHolder offlineCanvasHolder;
     private void popupCanvas(){
         final PopupWindow popupWindow;
         LayoutInflater layoutInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -168,9 +227,8 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         popupWindow = new PopupWindow(layout, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT,true);
         popupWindow.showAtLocation(layout, Gravity.CENTER,0,0);
 
-        OfflineCanvasHolder offlineCanvasHolder = new OfflineCanvasHolder(layout);
+        offlineCanvasHolder = new OfflineCanvasHolder(layout);
         canvasController = new DrawView(this);
-        canvasController.setBackgroundColor(Color.WHITE);
 
         offlineCanvasHolder.canvas.addView(canvasController, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
         final View mView = offlineCanvasHolder.canvas;
@@ -184,6 +242,20 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         offlineCanvasHolder.line_btn.setOnClickListener(buttonHandler);
         offlineCanvasHolder.freehand_btn.setOnClickListener(buttonHandler);
 
+        offlineCanvasHolder.currentShape_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (offlineCanvasHolder.shape_layout.getVisibility()==View.GONE){
+                    offlineCanvasHolder.shape_layout.setVisibility(View.VISIBLE);
+                    offlineCanvasHolder.color_layout.setVisibility(View.GONE);
+                }
+                else {
+                    offlineCanvasHolder.shape_layout.setVisibility(View.GONE);
+                    offlineCanvasHolder.color_layout.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
         offlineCanvasHolder.colorPicker_btn.setOnClickListener( colorHandler);
         offlineCanvasHolder.send_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -191,6 +263,9 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
                 uploadCanvas(mView,popupWindow);
             }
         });
+
+        //holder
+//        offlineCanvasHolder.bottomToolbar.setBackgroundResource(R.drawable.oval_bg);
     }
 
     View.OnClickListener buttonHandler = new View.OnClickListener() {
@@ -230,12 +305,44 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         }
     };
 
+    public void changeColor(View view){
+        switch (view.getId()){
+            case R.id.black_button:
+                canvasController.setPaintColor(Color.BLACK);
+                break;
+            case R.id.red_button:
+                canvasController.setPaintColor(Color.parseColor("#ed5757"));
+                break;
+            case R.id.yellow_button:
+                canvasController.setPaintColor(Color.parseColor("#f7f740"));
+                break;
+            case R.id.green_button:
+                canvasController.setPaintColor(Color.parseColor("#76ef6b"));
+                break;
+            case R.id.city_button:
+                canvasController.setPaintColor(Color.parseColor("#49f4f4"));
+                break;
+            case R.id.blue_button:
+                canvasController.setPaintColor(Color.parseColor("#4753ff"));
+                break;
+            case R.id.purple_btn:
+                canvasController.setPaintColor(Color.parseColor("#b733e8"));
+                break;
+            case R.id.current_color_btn:
+                canvasController.setPaintColor(lastColor);
+                break;
+        }
+    }
+
     void openDialog(boolean supportsAlpha) {
         AmbilWarnaDialog dialog = new AmbilWarnaDialog(OfflineCanvasChatActvity.this, Color.BLACK, supportsAlpha, new AmbilWarnaDialog.OnAmbilWarnaListener() {
             @Override
             public void onOk(AmbilWarnaDialog dialog, int color) {
                 Toast.makeText(getApplicationContext(), "ok", Toast.LENGTH_SHORT).show();
                 canvasController.setPaintColor(color);
+                lastColor = color;
+                String hexColor = String.format("#%06X", (0xFFFFFF & color));
+                offlineCanvasHolder.currentColor_btn.setColorFilter(color);
             }
 
             @Override
@@ -259,7 +366,6 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 
         LinearLayout canvas_ll = (LinearLayout)view.findViewById(R.id.myCanvas);
         final DrawView canvasController = new DrawView(this);
-        canvasController.setBackgroundColor(Color.WHITE);
         canvas_ll.addView(canvasController, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
         final View mView = canvas_ll;
 
@@ -372,50 +478,37 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 
     }
 
-    private void getChannel(){
-        final ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle("Connecting");
 
-        progressDialog.setMessage("please wait..");
-        progressDialog.show();
-        progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                Toast.makeText(OfflineCanvasChatActvity.this, "connection canceled", Toast.LENGTH_SHORT).show();
-            }
-        });
-        databaseReference.child("channels/"+firebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChild(receiver.getUid())){
+    private ValueEventListener channelListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            if(dataSnapshot.hasChild(receiver.getUid())){
 //                    databaseReference.child("user_detail").child(firebaseUser.getUid()).setValue(new User(
 //                            firebaseUser.getUid(),firebaseUser.getEmail(),firebaseUser.getDisplayName(), FirebaseInstanceId.getInstance().getToken(),firebaseUser.getPhotoUrl().toString()
 //                    ));
-                    Toast.makeText(OfflineCanvasChatActvity.this, "channel ready"+dataSnapshot.child(receiver.getUid()).getValue(), Toast.LENGTH_SHORT).show();
-                    channel_id = dataSnapshot.child(receiver.getUid()).getValue().toString();
-                }
-                else {
-                    HashMap <String , Object> selfChannel = new HashMap<>();
-                    selfChannel.put(receiver.getUid(),firebaseUser.getUid()+receiver.getUid());
-                    databaseReference.child("channels/").child(firebaseUser.getUid()).updateChildren(selfChannel);
-
-                    HashMap <String , Object> receiverChannel = new HashMap<>();
-                    receiverChannel.put(firebaseUser.getUid(),firebaseUser.getUid()+receiver.getUid());
-                    databaseReference.child("channels/").child(receiver.getUid()).updateChildren(receiverChannel);
-                    Toast.makeText(OfflineCanvasChatActvity.this, "channel created ", Toast.LENGTH_SHORT).show();
-                    channel_id = firebaseUser.getUid()+receiver.getUid();
-                }
-                progressDialog.dismiss();
-                setAdapter();
-                //Log.d("channel",channel_id);
+                Toast.makeText(OfflineCanvasChatActvity.this, "channel ready"+dataSnapshot.child(receiver.getUid()).getValue(), Toast.LENGTH_SHORT).show();
+                channel_id = dataSnapshot.child(receiver.getUid()).getValue().toString();
             }
+            else {
+                HashMap <String , Object> selfChannel = new HashMap<>();
+                selfChannel.put(receiver.getUid(),firebaseUser.getUid()+receiver.getUid());
+                databaseReference.child("channels/").child(firebaseUser.getUid()).updateChildren(selfChannel);
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                progressDialog.dismiss();
+                HashMap <String , Object> receiverChannel = new HashMap<>();
+                receiverChannel.put(firebaseUser.getUid(),firebaseUser.getUid()+receiver.getUid());
+                databaseReference.child("channels/").child(receiver.getUid()).updateChildren(receiverChannel);
+                Toast.makeText(OfflineCanvasChatActvity.this, "channel created ", Toast.LENGTH_SHORT).show();
+                channel_id = firebaseUser.getUid()+receiver.getUid();
             }
-        });
-    }
+            setAdapter();
+            //Log.d("channel",channel_id);
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.d(TAG, "onCancelled: "+databaseError.getMessage());
+        }
+    };
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
@@ -447,7 +540,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
 
     private void sendNotification (){
 
-        if(receiver.getToken().equals(""))
+        if(receiver.getToken()==null)
             return;
         Log.d("sendnotif", "sendNotification: ");
 
@@ -499,5 +592,12 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
                 progressDialog.dismiss();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        connectedRef.removeEventListener(connectionListener);
+        databaseReference.removeEventListener(channelListener);
+        super.onDestroy();
     }
 }

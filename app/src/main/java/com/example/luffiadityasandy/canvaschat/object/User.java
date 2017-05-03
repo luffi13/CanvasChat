@@ -93,4 +93,5 @@ public class User extends RealmObject implements Serializable {
     public void setIsEverChat(Boolean everChat) {
         isEverChat = everChat;
     }
+
 }

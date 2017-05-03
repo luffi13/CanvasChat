@@ -14,13 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".activity.SignatureActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
-        <activity android:name=".activity.LoginActivity" />
+        <activity android:name=".activity.LoginActivity" >
+
+        </activity>
         <activity android:name=".activity.WriteDatabaseActivity" />
         <activity android:name=".activity.ListFriendActivity" />
         <activity android:name=".activity.OfflineCanvasChatActvity" />
@@ -43,9 +41,14 @@
         <activity
             android:name=".activity.TabLayoutActivity"
             android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
-        <activity android:name=".activity.SearchFriendActivity"></activity>
+        <activity android:name=".activity.SearchFriendActivity"
+            android:windowSoftInputMode="adjustNothing"></activity>
         <activity android:name=".activity.RealmActivity">
 
         </activity>

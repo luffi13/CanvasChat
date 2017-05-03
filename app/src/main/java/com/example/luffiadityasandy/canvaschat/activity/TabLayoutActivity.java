@@ -26,6 +26,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +35,8 @@ public class TabLayoutActivity extends AppCompatActivity implements GoogleApiCli
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private FirebaseUser mUser;
-    GoogleApiClient googleApiClient;
+    private GoogleApiClient googleApiClient;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +45,15 @@ public class TabLayoutActivity extends AppCompatActivity implements GoogleApiCli
         mUser = FirebaseAuth.getInstance().getCurrentUser();
         if(mUser!=null){
             Log.d("usernya",mUser.toString());
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            toolbar.setTitle(mUser.getDisplayName().split(" ")[0]);
+            setSupportActionBar(toolbar);
+            updateToken();
         }
         else {
-            startActivity(new Intent(TabLayoutActivity.this, LoginActivity.class));
-            finish();
+            Log.d("tablayout", "onCreate: no user logged in ");
+            //start login aactivity
+            gotoLoginActivity();
         }
 
         googleApiClient = new GoogleApiClient.Builder(this)
@@ -54,9 +61,6 @@ public class TabLayoutActivity extends AppCompatActivity implements GoogleApiCli
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(mUser.getDisplayName().split(" ")[0]);
-        setSupportActionBar(toolbar);
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -72,11 +76,17 @@ public class TabLayoutActivity extends AppCompatActivity implements GoogleApiCli
 
     }
 
+    private void updateToken(){
+        DatabaseReference tokenRef = FirebaseDatabase.getInstance().getReference("/user_detail/"+mUser.getUid());
+        HashMap<String,Object> myToken = new HashMap<>();
+        myToken.put("token", FirebaseInstanceId.getInstance().getToken());
+        tokenRef.updateChildren(myToken);
+    }
+
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Toast.makeText(this, "connection Problem", Toast.LENGTH_SHORT).show();
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -100,8 +110,14 @@ public class TabLayoutActivity extends AppCompatActivity implements GoogleApiCli
                 signOut();
                 return true;
         }
-
         return super.onOptionsItemSelected(item);
+    }
+
+    private void gotoLoginActivity(){
+        Intent intent = new Intent(TabLayoutActivity.this,LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
     }
 
     public void signOut(){
@@ -111,8 +127,7 @@ public class TabLayoutActivity extends AppCompatActivity implements GoogleApiCli
         databaseReference.child("user_detail").child(mUser.getUid()).updateChildren(nullToken);
         FirebaseAuth.getInstance().signOut();
         Auth.GoogleSignInApi.signOut(googleApiClient);
-        startActivity(new Intent(this, LoginActivity.class));
-        finish();
+        gotoLoginActivity();
     }
 
 

@@ -22,11 +22,17 @@ public class InstanceIdService extends com.google.firebase.iid.FirebaseInstanceI
         String token = FirebaseInstanceId.getInstance().getToken();
         Log.d("getToken",token);
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
 
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("token",token);
-        databaseReference.child("user_detail").child(firebaseUser.getUid()).updateChildren(hashMap);
+        if(firebaseUser!=null){
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+
+            HashMap<String, Object> hashMap = new HashMap<>();
+            hashMap.put("token",token);
+            databaseReference.child("user_detail").child(firebaseUser.getUid()).updateChildren(hashMap);
+        }
+        else {
+            Log.d("tokenservice", "onTokenRefresh: no user logged in");
+        }
 
     }
 }

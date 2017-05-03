@@ -22,6 +22,7 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
@@ -38,6 +39,7 @@ public class ListFriendFragment extends Fragment  {
     private static final String TAG = "ListFriendFragment";
 
     DatabaseReference databaseReference;
+    DatabaseReference connectedRef;
     ListFriendAdapter adapterFriend;
     ListFriendAdapter requestAdapter;
     RecyclerView friend_rv, request_rv;
@@ -68,12 +70,13 @@ public class ListFriendFragment extends Fragment  {
 
         mUid = getArguments().getString("uid");
         databaseReference = FirebaseDatabase.getInstance().getReference("/friendship/"+mUid);
+        connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
 
 
         //instansiasi adapter
-        adapterFriend = new ListFriendAdapter(User.class, R.layout.item_friend, FriendViewHolder.class,databaseReference.orderByChild("state").equalTo("friend"));
+        adapterFriend = new ListFriendAdapter(User.class, R.layout.item_friend, FriendViewHolder.class,databaseReference.orderByChild("state").equalTo("friend"), "friend");
         adapterFriend.setActivity(getActivity());
-        requestAdapter = new ListFriendAdapter(User.class, R.layout.item_friend, FriendViewHolder.class,databaseReference.orderByChild("state").equalTo("request"));
+        requestAdapter = new ListFriendAdapter(User.class, R.layout.item_friend, FriendViewHolder.class,databaseReference.orderByChild("state").equalTo("request"), "friend");
         requestAdapter.setActivity(getActivity());
 
     }
@@ -108,11 +111,10 @@ public class ListFriendFragment extends Fragment  {
 
     private void connectionDetector(){
         isEverConnected = false;
-        final DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
         connectedRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                boolean connected = snapshot.getValue(Boolean.class);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean connected = dataSnapshot.getValue(Boolean.class);
                 if (connected) {
                     System.out.println("connected to firebase");
                     isEverConnected = true;
@@ -132,11 +134,12 @@ public class ListFriendFragment extends Fragment  {
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {
-                System.err.println("Listener was cancelled");
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
     }
+
 
     //save list friend to local
     private void saveListFriend(){
@@ -144,6 +147,7 @@ public class ListFriendFragment extends Fragment  {
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+
                         for (DataSnapshot children : dataSnapshot.getChildren()
                              ) {
                             User friend = children.getValue(User.class);
@@ -159,8 +163,6 @@ public class ListFriendFragment extends Fragment  {
 
                     }
                 });
-
-
     }
 
 }

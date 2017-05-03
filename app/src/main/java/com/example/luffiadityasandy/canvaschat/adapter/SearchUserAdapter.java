@@ -9,6 +9,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.ImageView;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.luffiadityasandy.canvaschat.R;
+import com.example.luffiadityasandy.canvaschat.activity.SearchFriendActivity;
 import com.example.luffiadityasandy.canvaschat.object.User;
 import com.example.luffiadityasandy.canvaschat.view_holder.PreviewHolder;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -96,6 +98,7 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
         userHolder.user_ll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 initiatePopUpWindow(user,parent);
             }
         });
@@ -165,6 +168,9 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
     }
 
     private void initiatePopUpWindow(final User user, View view){
+        InputMethodManager imm = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+
         final PopupWindow popupWindow;
         LayoutInflater layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = layoutInflater.inflate(R.layout.user_preview,(ViewGroup)view.findViewById(R.id.preview_layout));

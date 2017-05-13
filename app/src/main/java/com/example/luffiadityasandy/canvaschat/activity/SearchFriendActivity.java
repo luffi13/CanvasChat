@@ -31,20 +31,21 @@ import java.util.List;
 
 public class SearchFriendActivity extends AppCompatActivity {
 
-    User mUser;
-    DatabaseReference reference;
+    private User mUser;
+    private EditText keyword_et;
+    private ListView listView;
 
-    EditText keyword_et;
-    ListView listView;
-
-    SearchUserAdapter adapter;
-    ArrayList<User>listUser;
-    HashMap<String,User> listFriend;
+    private SearchUserAdapter adapter;
+    private ArrayList<User>listUser;
+    private boolean isConnected;
+    private DatabaseReference connectionReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_friend);
+
+
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         mUser = new User(currentUser.getUid(),currentUser.getEmail(),currentUser.getDisplayName(), FirebaseInstanceId.getInstance().getToken(),currentUser.getPhotoUrl().toString());
 
@@ -58,6 +59,10 @@ public class SearchFriendActivity extends AppCompatActivity {
         keyword_et.addTextChangedListener(textWatcher);
 
         getAllUser();
+        isConnected = false;
+
+        connectionReference = FirebaseDatabase.getInstance().getReference(".info/connected");
+        connectionReference.addValueEventListener(connectionListener);
 
     }
 
@@ -101,6 +106,25 @@ public class SearchFriendActivity extends AppCompatActivity {
             }
         });
     }
+
+    private ValueEventListener connectionListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot snapshot) {
+            boolean flag = snapshot.getValue(Boolean.class);
+            if (flag) {
+                isConnected= true;
+                adapter.setConnected(true);
+            } else {
+                isConnected = false;
+                adapter.setConnected(false);
+            }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError error) {
+            System.err.println("Listener was cancelled");
+        }
+    };
 
 
 

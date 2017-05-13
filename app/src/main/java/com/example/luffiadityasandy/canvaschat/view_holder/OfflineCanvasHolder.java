@@ -19,7 +19,7 @@ public class OfflineCanvasHolder {
     public LinearLayout canvas, shape_layout;
 
 
-    public CircleImageView send_btn, black_btn, red_btn, yellow_btn, green_btn, city_btn, blue_btn, purple_btn, currentColor_btn;
+    public CircleImageView send_btn,  currentColor_btn;
     public ImageView undo_btn,redo_btn, colorPicker_btn,currentShape_btn, freehand_btn, circle_btn, rectangle_btn, line_btn ;
     public OfflineCanvasHolder(View view) {
         //get button from UI

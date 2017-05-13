@@ -216,7 +216,6 @@ public class DrawView  extends View implements View.OnTouchListener {
         {
             undonePaths.add(paths.remove(paths.size()-1));
             invalidate();
-
         }
     }
 

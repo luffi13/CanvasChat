@@ -66,7 +66,7 @@ public class ListMessageAdapter extends FirebaseRecyclerAdapter<Message, Message
 
     @Override
     public int getItemCount() {
-        if (!isConnected){
+        if (!isConnected&&offlineMessageData!=null){
             return offlineMessageData.size();
         }
         return super.getItemCount();
@@ -82,6 +82,9 @@ public class ListMessageAdapter extends FirebaseRecyclerAdapter<Message, Message
 
     public RealmList<Message> getLastMessages(int count){
         int limit = 0;
+        if (getItemCount()==0){
+            return null;
+        }
         if (count<getItemCount()){
             limit = getItemCount()-count;
         }

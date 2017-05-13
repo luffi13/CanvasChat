@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -52,15 +53,17 @@ public class ShareableCanvasActivity extends AppCompatActivity {
     User receiver;
     String channel_id = "";
 
-    LinearLayout canvas;
-    RelativeLayout colorPickerLayout,shapePickerLayout;
+    LinearLayout canvas, shape_layout ;
+    RelativeLayout color_layout;
     View mView;
     ShareableCanvasView canvasController;
     Button save;
-    FloatingActionButton freehand_btn, circle_btn, rectangle_btn, line_btn;
-    CircleImageView undo,redo, invite_btn,colorPicker_btn;
-//    CircleImageView currentColor_btn, currentShape_btn;
+    ImageView freehand_btn, circle_btn, rectangle_btn, line_btn;
+    ImageView undo,redo, colorPicker_btn, currentShape_btn;
+    CircleImageView currentColor_btn;
     AmbilWarnaDialog colorPickerDialog ;
+
+    int lastColor = Color.BLACK;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,48 +76,54 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         receiver = (User)getIntent().getSerializableExtra("receiver");
 
         //get button from UI
-        undo = (CircleImageView) findViewById(R.id.undo_btn);
-        redo = (CircleImageView) findViewById(R.id.redo_btn);
-        //save = (Button)findViewById(R.id.saveCanvas) ;
-        rectangle_btn = (FloatingActionButton) findViewById(R.id.rectangle_btn);
-        circle_btn= (FloatingActionButton)findViewById(R.id.circle_btn);
-        freehand_btn = (FloatingActionButton)findViewById(R.id.freehand_btn);
-        line_btn = (FloatingActionButton)findViewById(R.id.line_btn);
-        //invite_btn = (Button) findViewById(R.id.invite_btn);
+        undo = (ImageView) findViewById(R.id.undo_btn);
+        redo = (ImageView) findViewById(R.id.redo_btn);
+        rectangle_btn = (ImageView) findViewById(R.id.rectangle_btn);
+        circle_btn= (ImageView)findViewById(R.id.circle_btn);
+        freehand_btn = (ImageView)findViewById(R.id.freehand_btn);
+        line_btn = (ImageView)findViewById(R.id.line_btn);
         canvas = (LinearLayout)findViewById(R.id.myCanvas);
+        currentColor_btn = (CircleImageView)findViewById(R.id.current_color_btn);
+        shape_layout = (LinearLayout)findViewById(R.id.shape_layout);
+        color_layout = (RelativeLayout)findViewById(R.id.color_layout);
+        currentShape_btn = (ImageView) findViewById(R.id.currentShape_btn);
 
-        Log.d("sizee", "onCreate: "+canvas.getHeight()+" "+canvas.getWidth());
-
-        //currentShape_btn = (CircleImageView)findViewById(R.id.currentShape_btn);
-        //currentColor_btn = (CircleImageView)findViewById(R.id.currentColor_btn);
-
-//        colorPickerLayout = (RelativeLayout)findViewById(R.id.colorPicker_layout);
-//        shapePickerLayout = (RelativeLayout)findViewById(R.id.shapePicker_layout);
-//
-//        colorPickerLayout.setVisibility(View.GONE);
-//        shapePickerLayout.setVisibility(View.GONE);
-
+        shape_layout.setVisibility(View.GONE);
 
         //color
-        colorPicker_btn= (CircleImageView)findViewById(R.id.colorPicker_btn);
+        colorPicker_btn= (ImageView) findViewById(R.id.colorPicker_btn);
 
 
         //set listener for button click
         undo.setOnClickListener(clickHandler);
         redo.setOnClickListener(clickHandler);
-        //save.setOnClickListener(clickHandler);
         rectangle_btn.setOnClickListener(clickHandler);
         circle_btn.setOnClickListener(clickHandler);
         line_btn.setOnClickListener(clickHandler);
         freehand_btn.setOnClickListener(clickHandler);
-        //invite_btn.setOnClickListener(clickHandler);
 
         //set color click
         colorPicker_btn.setOnClickListener( colorHandler);
 
+        currentShape_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (shape_layout.getVisibility()==View.GONE){
+                    shape_layout.setVisibility(View.VISIBLE);
+                    color_layout.setVisibility(View.GONE);
+                }
+                else {
+                    shape_layout.setVisibility(View.GONE);
+                    color_layout.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
         //
         getChannel();
     }
+
+
 
     private View.OnClickListener clickHandler = new View.OnClickListener() {
         @Override
@@ -135,6 +144,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
                     break;
                 case R.id.circle_btn:
                     canvasController.setPaintTool("circle");
+                    currentShape_btn.setImageResource(R.mipmap.circle);
                     break;
                 case R.id.freehand_btn:
                     canvasController.setPaintTool("freehand");
@@ -166,6 +176,8 @@ public class ShareableCanvasActivity extends AppCompatActivity {
             public void onOk(AmbilWarnaDialog dialog, int color) {
                 Toast.makeText(getApplicationContext(), "ok", Toast.LENGTH_SHORT).show();
                 canvasController.setPaintColor(color);
+                lastColor = color;
+                currentColor_btn.setColorFilter(color);
             }
 
             @Override
@@ -176,8 +188,33 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void changeColor(int color){
-        canvasController.setPaintColor(color);
+    public void changeColor(View view){
+        switch (view.getId()){
+            case R.id.black_button:
+                canvasController.setPaintColor(Color.BLACK);
+                break;
+            case R.id.red_button:
+                canvasController.setPaintColor(Color.parseColor("#ed5757"));
+                break;
+            case R.id.yellow_button:
+                canvasController.setPaintColor(Color.parseColor("#f7f740"));
+                break;
+            case R.id.green_button:
+                canvasController.setPaintColor(Color.parseColor("#76ef6b"));
+                break;
+            case R.id.city_button:
+                canvasController.setPaintColor(Color.parseColor("#49f4f4"));
+                break;
+            case R.id.blue_button:
+                canvasController.setPaintColor(Color.parseColor("#4753ff"));
+                break;
+            case R.id.purple_btn:
+                canvasController.setPaintColor(Color.parseColor("#b733e8"));
+                break;
+            case R.id.current_color_btn:
+                canvasController.setPaintColor(lastColor);
+                break;
+        }
     }
 
     private void deleteDatabase(){
@@ -246,11 +283,11 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         canvasController = new ShareableCanvasView(this,channel_id);
         canvasController.setBackgroundColor(Color.WHITE);
         Log.d("size canvas1", canvas.getWidth()+" "+canvas.getHeight());
-        int height = canvas.getWidth();
+        int height = (int)(canvas.getWidth()*1.2);
         canvas.addView(canvasController,canvas.getWidth(),height);
-        Log.d("size canvas", canvas.getWidth()+" "+canvas.getHeight());
+        Log.d("canvasAfterSet", canvas.getWidth()+" "+height);
         mView = canvas;
-        setMyCanvasSize(canvas.getWidth(),canvas.getWidth());
+        setMyCanvasSize(canvas.getWidth(),height);
 //        getReceiverCanvas();
     }
 
@@ -324,7 +361,6 @@ public class ShareableCanvasActivity extends AppCompatActivity {
                 Log.d("isSuccess", isSuccess+"");
                 if(isSuccess==1){
                     Toast.makeText(ShareableCanvasActivity.this, "invitation sent", Toast.LENGTH_SHORT).show();
-                    invite_btn.setVisibility(View.GONE);
                 }
                 progressDialog.dismiss();
             }

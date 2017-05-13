@@ -1,6 +1,7 @@
 package com.example.luffiadityasandy.canvaschat.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.luffiadityasandy.canvaschat.R;
+import com.example.luffiadityasandy.canvaschat.activity.OfflineCanvasChatActvity;
 import com.example.luffiadityasandy.canvaschat.activity.SearchFriendActivity;
 import com.example.luffiadityasandy.canvaschat.object.User;
 import com.example.luffiadityasandy.canvaschat.view_holder.PreviewHolder;
@@ -54,6 +56,9 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
     private HashMap<String,User> listFriend;
     private int resource;
     private Context context;
+    private boolean isConnected;
+
+
 
 
     public SearchUserAdapter(Context context, int resource, List<User> objects) {
@@ -67,7 +72,10 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
         databaseReference = FirebaseDatabase.getInstance().getReference();
         listFriend = new HashMap<>();
         getListFriend();
+        isConnected = false;
     }
+
+
 
     @NonNull
     @Override
@@ -168,7 +176,7 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
     }
 
     private void initiatePopUpWindow(final User user, View view){
-        InputMethodManager imm = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        final InputMethodManager imm = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
         final PopupWindow popupWindow;
@@ -182,6 +190,15 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
         PreviewHolder previewHolder = new PreviewHolder(layout);
         previewHolder.name_tv.setText(user.getName());
         previewHolder.email_tv.setText(user.getEmail());
+
+        previewHolder.chatLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goPrivateChat(user);
+                popupWindow.dismiss();
+            }
+        });
+
         if (user.getPhotoUrl()==null){
             previewHolder.userPhoto.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_account_circle));
         }
@@ -189,19 +206,32 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
             Glide.with(context).load(user.getPhotoUrl()+"?sz=300").into(previewHolder.userPhoto);
         }
         if (listFriend!=null&&listFriend.get(user.getUid())!=null){
-            previewHolder.addButton.setVisibility(View.GONE);
+            previewHolder.addLayout.setVisibility(View.GONE);
         }
         else {
-            previewHolder.addButton.setOnClickListener(new View.OnClickListener() {
+            previewHolder.addLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    addFriend(user);
-                    popupWindow.dismiss();
+                    if (isConnected){
+                        addFriend(user);
+                        popupWindow.dismiss();
+                    }
+                    else {
+                        Toast.makeText(context, "connection problem", Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
         }
 
     }
+    private void goPrivateChat(User user){
+        Intent privateChatIntent = new Intent(context, OfflineCanvasChatActvity.class);
+        User tempUser = new User(user.getUid(),user.getEmail(),user.getName(),user.getToken(),user.getPhotoUrl());
+        privateChatIntent.putExtra("receiver",tempUser);
+        Log.d("searchadapter", "go private: friend uid"+user.getUid());
+        context.startActivity(privateChatIntent);
+    }
+
 
     private void addFriend(final User friend){
         friend.setState("friend");
@@ -239,12 +269,18 @@ public class SearchUserAdapter extends ArrayAdapter<User> {
                 });
     }
 
+    public void setConnected(boolean connected) {
+        isConnected = connected;
+    }
+
     private class UserHolder{
         TextView displayName;
         CircleImageView userPhoto;
         LinearLayout user_ll;
 
     }
+
+
 
 
 }

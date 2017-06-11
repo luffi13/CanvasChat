@@ -450,10 +450,11 @@ public class ShareableCanvasView extends View implements View.OnTouchListener  {
     }
 
 
-    private void sendNewData(ShareableItem item){
+    private void sendNewData(final ShareableItem item){
         databaseReference.child("shareable_canvas").child(channel_id).child("messages").child(item.getKey()).setValue(item).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
+                //referencePath.put(item.getKey(),item);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override

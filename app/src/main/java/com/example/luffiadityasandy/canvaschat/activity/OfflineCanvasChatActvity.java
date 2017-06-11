@@ -72,6 +72,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import io.realm.Realm;
 import io.realm.RealmList;
 import io.realm.RealmObject;
@@ -95,6 +96,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
     private boolean connected;
     private Realm realm;
     private DatabaseReference connectedRef;
+    private CircleImageView lastColorButton;
 
     //uploadtask
     UploadTask uploadTask;
@@ -126,6 +128,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         receiver = (User)getIntent().getSerializableExtra("receiver");
         realm = Realm.getInstance(this);
         channel_id = "tempChannel";
+        setTitle(receiver.getName());
 
         Log.d(TAG, "onCreate: userid on offline canvas "+receiver.getUid());
         //Toast.makeText(this, receiver.getName()+"\n"+receiver.getEmail()+"\n"+receiver.getUid()+"\n"+receiver.getToken()+"\n", Toast.LENGTH_SHORT).show();
@@ -179,6 +182,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
                 databaseReference.child("channels/"+firebaseUser.getUid()).addListenerForSingleValueEvent(channelListener);
                 listMessageAdapter.setConnected(true);
                 connectedRef.removeEventListener(this);
+                databaseReference.child("user_detail/"+receiver.getUid()).addValueEventListener(tokenListener);
 
             } else if(!isEverConnected) {
                 System.out.println("never connected to firebase");
@@ -212,6 +216,31 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
             System.err.println("Listener was cancelled");
         }
     };
+
+    private ValueEventListener tokenListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            Log.d(TAG, "onDataChange tokenlistener: "+dataSnapshot.getValue().toString());
+            User newUpdatedReceiverData = dataSnapshot.getValue(User.class);
+            if (newUpdatedReceiverData!=null){
+                receiver.setToken(newUpdatedReceiverData.getToken());
+            }
+            //Log.d(TAG, "onDataChange receiver token change: "+receiver.getToken());
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    public void setLastColorButton(int buttonId){
+        lastColorButton.setBorderWidth(0);
+        lastColorButton = (CircleImageView)offlineCanvasHolder.rootLayout.findViewById(buttonId);
+        lastColorButton.setBorderWidth(6);
+
+        lastColorButton.setBorderColor(Color.parseColor("#ff0000"));
+    }
 
     private View.OnClickListener clickHandler = new View.OnClickListener() {
         @Override
@@ -311,8 +340,12 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         View layout = layoutInflater.inflate(R.layout.create_canvas,(ViewGroup)findViewById(R.id.popup_canvas));
         popupWindow = new PopupWindow(layout, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT,true);
         popupWindow.showAtLocation(layout, Gravity.CENTER,0,0);
+        popupWindow.setOutsideTouchable(true);
+        popupWindow.setFocusable(true);
 
         offlineCanvasHolder = new OfflineCanvasHolder(layout);
+        lastColorButton = (CircleImageView)layout.findViewById(R.id.black_button);
+        offlineCanvasHolder.currentShape_btn.setImageResource(R.mipmap.freeshape);
         canvasController = new DrawView(this);
 
         offlineCanvasHolder.canvas.addView(canvasController, ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
@@ -365,15 +398,19 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
                     break;
                 case R.id.rectangle_btn:
                     canvasController.setPaintTool("rectangle");
+                    offlineCanvasHolder.currentShape_btn.setImageResource(R.mipmap.rectangle);
                     break;
                 case R.id.circle_btn:
                     canvasController.setPaintTool("circle");
+                    offlineCanvasHolder.currentShape_btn.setImageResource(R.mipmap.circle);
                     break;
                 case R.id.freehand_btn:
                     canvasController.setPaintTool("freehand");
+                    offlineCanvasHolder.currentShape_btn.setImageResource(R.mipmap.freeshape);
                     break;
                 case R.id.line_btn:
                     canvasController.setPaintTool("line");
+                    offlineCanvasHolder.currentShape_btn.setImageResource(R.mipmap.line);
                     break;
             }
         }
@@ -417,6 +454,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
                 canvasController.setPaintColor(lastColor);
                 break;
         }
+        setLastColorButton(view.getId());
     }
 
     void openDialog(boolean supportsAlpha) {
@@ -427,6 +465,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
                 canvasController.setPaintColor(color);
                 lastColor = color;
                 offlineCanvasHolder.currentColor_btn.setColorFilter(color);
+                setLastColorButton(R.id.current_color_btn);
             }
 
             @Override
@@ -521,6 +560,7 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
     private ValueEventListener channelListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
+            Log.d(TAG, "channellistener: "+receiver.getUid());
             if(dataSnapshot.hasChild(receiver.getUid())){
 //                    databaseReference.child("user_detail").child(firebaseUser.getUid()).setValue(new User(
 //                            firebaseUser.getUid(),firebaseUser.getEmail(),firebaseUser.getDisplayName(), FirebaseInstanceId.getInstance().getToken(),firebaseUser.getPhotoUrl().toString()
@@ -572,6 +612,12 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
                     recyclerView.scrollToPosition(positionStart);
                 }
             }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                super.onItemRangeInserted(positionStart, itemCount);
+                recyclerView.scrollToPosition(positionStart);
+            }
         });
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(listMessageAdapter);
@@ -582,11 +628,6 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         if(receiver.getToken()==null)
             return;
         Log.d("sendnotif", "sendNotification: "+receiver.getToken());
-
-//        final ProgressDialog progressDialog = new ProgressDialog(OfflineCanvasChatActvity.this);
-//        progressDialog.setTitle("Sending Notification");
-//        progressDialog.setMessage("please wait....");
-//        progressDialog.show();
 
         Gson gson = new GsonBuilder()
                 .setExclusionStrategies(new ExclusionStrategy() {
@@ -620,15 +661,13 @@ public class OfflineCanvasChatActvity extends AppCompatActivity implements Googl
         sendNotification.enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
-                Log.d("responseNotif",response.body().toString());
-                //progressDialog.dismiss();
+                Log.d("responseNotification",response.body().toString());
             }
 
             @Override
             public void onFailure(Call<JsonElement> call, Throwable t) {
                 Log.d("responseNotif","failed");
                 t.printStackTrace();
-                //progressDialog.dismiss();
             }
         });
     }

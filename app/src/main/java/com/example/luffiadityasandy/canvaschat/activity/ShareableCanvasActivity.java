@@ -3,6 +3,7 @@ package com.example.luffiadityasandy.canvaschat.activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,6 +23,8 @@ import com.example.luffiadityasandy.canvaschat.object.GCMRequest;
 import com.example.luffiadityasandy.canvaschat.object.User;
 import com.example.luffiadityasandy.canvaschat.service.InstanceIdService;
 import com.example.luffiadityasandy.canvaschat.service.ServiceMessaging;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -60,8 +63,8 @@ public class ShareableCanvasActivity extends AppCompatActivity {
     Button save;
     ImageView freehand_btn, circle_btn, rectangle_btn, line_btn;
     ImageView undo,redo, colorPicker_btn, currentShape_btn;
-    CircleImageView currentColor_btn;
-    AmbilWarnaDialog colorPickerDialog ;
+    CircleImageView currentColor_btn, lastColorButton;
+    FloatingActionButton deleteAllButton;
 
     int lastColor = Color.BLACK;
 
@@ -74,6 +77,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         databaseReference = FirebaseDatabase.getInstance().getReference();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         receiver = (User)getIntent().getSerializableExtra("receiver");
+        setTitle("Share canvas with "+receiver.getName().split(" ")[0]);
 
         //get button from UI
         undo = (ImageView) findViewById(R.id.undo_btn);
@@ -87,8 +91,15 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         shape_layout = (LinearLayout)findViewById(R.id.shape_layout);
         color_layout = (RelativeLayout)findViewById(R.id.color_layout);
         currentShape_btn = (ImageView) findViewById(R.id.currentShape_btn);
+        lastColorButton = (CircleImageView)findViewById(R.id.black_button);
+        deleteAllButton = (FloatingActionButton)findViewById(R.id.delete_all_btn);
+        deleteAllButton.setOnClickListener(clickHandler);
+
+        lastColorButton.setBorderWidth(6);
+        lastColorButton.setBorderColor(Color.parseColor("#ff0000"));
 
         shape_layout.setVisibility(View.GONE);
+        currentShape_btn.setImageResource(R.mipmap.freeshape);
 
         //color
         colorPicker_btn= (ImageView) findViewById(R.id.colorPicker_btn);
@@ -141,6 +152,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
                     break;
                 case R.id.rectangle_btn:
                     canvasController.setPaintTool("rectangle");
+                    currentShape_btn.setImageResource(R.mipmap.rectangle);
                     break;
                 case R.id.circle_btn:
                     canvasController.setPaintTool("circle");
@@ -148,9 +160,14 @@ public class ShareableCanvasActivity extends AppCompatActivity {
                     break;
                 case R.id.freehand_btn:
                     canvasController.setPaintTool("freehand");
+                    currentShape_btn.setImageResource(R.mipmap.freeshape);
                     break;
                 case R.id.line_btn:
                     canvasController.setPaintTool("line");
+                    currentShape_btn.setImageResource(R.mipmap.line);
+                    break;
+                case R.id.delete_all_btn:
+                    deleteAllPath();
                     break;
 //                case R.id.invite_btn:
 //                    sendNotification();
@@ -188,6 +205,27 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    ProgressDialog clearingCanvasDialog;
+    private void deleteAllPath(){
+        clearingCanvasDialog = new ProgressDialog(this);
+        clearingCanvasDialog.setTitle("Clearing Data");
+        clearingCanvasDialog.setMessage("please wait...");
+        clearingCanvasDialog.show();
+        databaseReference.child("shareable_canvas/"+channel_id).getRef().setValue(null).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                clearingCanvasDialog.dismiss();
+                if (task.isSuccessful()){
+                    Toast.makeText(ShareableCanvasActivity.this, "success clear data", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Toast.makeText(ShareableCanvasActivity.this, "failed clear data", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+    }
+
     public void changeColor(View view){
         switch (view.getId()){
             case R.id.black_button:
@@ -215,6 +253,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
                 canvasController.setPaintColor(lastColor);
                 break;
         }
+        setLastColorButton(view.getId());
     }
 
     private void deleteDatabase(){
@@ -231,6 +270,13 @@ public class ShareableCanvasActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    public void setLastColorButton(int buttonId){
+        lastColorButton.setBorderWidth(0);
+        lastColorButton = (CircleImageView)findViewById(buttonId);
+        lastColorButton.setBorderWidth(6);
+        lastColorButton.setBorderColor(Color.parseColor("#ff0000"));
     }
 
     //get channel to push message in firebase database
@@ -283,6 +329,7 @@ public class ShareableCanvasActivity extends AppCompatActivity {
         canvasController = new ShareableCanvasView(this,channel_id);
         canvasController.setBackgroundColor(Color.WHITE);
         Log.d("size canvas1", canvas.getWidth()+" "+canvas.getHeight());
+//        int height = (int)(canvas.getWidth()*1.2);
         int height = (int)(canvas.getWidth()*1.2);
         canvas.addView(canvasController,canvas.getWidth(),height);
         Log.d("canvasAfterSet", canvas.getWidth()+" "+height);
